@@ -1,73 +1,66 @@
-namespace NettspendSautiPhase1
+namespace NettspendSautiPhase1;
+
+public class Traveller
 {
-    public class Traveller
+    public ArtistNode StartArtistNode { get; set; }
+    public ArtistNode EndArtistNode { get; set; }
+    public List<ArtistNode> Path { get; set; }
+    public double Cost { get; set; }
+    private ArtistNetwork ArtistNetwork { get; set; }
+
+    public Traveller(ArtistNode startArtistNode, ArtistNode endArtistNode, ArtistNetwork artistNetwork)
     {
-        public Artist StartArtist { get; set; }
-        public Artist EndArtist { get; set; }
-        public List<Artist> Path { get; set; }
-        public double Cost { get; set; }
+        StartArtistNode = startArtistNode;
+        EndArtistNode = endArtistNode;
+        ArtistNetwork = artistNetwork;
+        Path = new List<ArtistNode>();
+        Cost = double.MaxValue;
+    }
 
-        private NetworkOfArtists Network { get; set; }
+    public void Traverse()
+    {
+        var priorityQueue = new PriorityQueue<ArtistNode, double>();
+        var distances = new Dictionary<ArtistNode, double>();
+        var previous = new Dictionary<ArtistNode, ArtistNode>();
 
-        public Traveller(Artist startArtist, Artist endArtist, NetworkOfArtists network)
+        foreach (var artist in ArtistNetwork.AdjacencyMatrix.Keys)
         {
-            StartArtist = startArtist;
-            EndArtist = endArtist;
-            Network = network;
-            Path = new List<Artist>();
-            Cost = double.MaxValue;
+            distances[artist] = double.MaxValue;
+            previous[artist] = null;
         }
+        distances[StartArtistNode] = 0;
 
-        public void Traverse()
+        priorityQueue.Enqueue(StartArtistNode, 0);
+
+        while (priorityQueue.Count > 0)
         {
-            var priorityQueue = new PriorityQueue<Artist, double>();
-            var distances = new Dictionary<Artist, double>();
-            var previous = new Dictionary<Artist, Artist>();
+            var currentArtist = priorityQueue.Dequeue();
+            var currentDistance = distances[currentArtist];
 
-            // Initialize distances to infinity and startArtist's distance to 0
-            foreach (var artist in Network.AdjacencyMatrix.Keys)
+            if (currentArtist.Equals(EndArtistNode))
+                break;
+
+            foreach (var connection in ArtistNetwork.GetConnections(currentArtist))
             {
-                distances[artist] = double.MaxValue;
-                previous[artist] = null;
-            }
-            distances[StartArtist] = 0;
+                var neighbor = connection.Node2 as ArtistNode;
+                double newDist = currentDistance + connection.Weight;
 
-            priorityQueue.Enqueue(StartArtist, 0); // Start with the start artist at distance 0
-
-            while (priorityQueue.Count > 0)
-            {
-                var currentArtist = priorityQueue.Dequeue();
-                var currentDistance = distances[currentArtist];
-
-                if (currentArtist == EndArtist)
+                if (newDist < distances[neighbor])
                 {
-                    break;
-                }
-
-                // Explore neighbors
-                foreach (var connection in Network.GetConnections(currentArtist))
-                {
-                    Artist neighbor = connection.Artist1 == currentArtist ? connection.Artist2 : connection.Artist1;
-                    double newDist = currentDistance + connection.Weight;
-
-                    if (newDist < distances[neighbor])
-                    {
-                        distances[neighbor] = newDist;
-                        previous[neighbor] = currentArtist;
-                        priorityQueue.Enqueue(neighbor, newDist);
-                    }
+                    distances[neighbor] = newDist;
+                    previous[neighbor] = currentArtist;
+                    priorityQueue.Enqueue(neighbor, newDist);
                 }
             }
-
-            // Reconstruct the path
-            Artist pathArtist = EndArtist;
-            while (pathArtist != null)
-            {
-                Path.Insert(0, pathArtist);
-                pathArtist = previous[pathArtist];
-            }
-
-            Cost = distances[EndArtist];
         }
+
+        ArtistNode pathArtistNode = EndArtistNode;
+        while (pathArtistNode != null)
+        {
+            Path.Insert(0, pathArtistNode);
+            pathArtistNode = previous[pathArtistNode];
+        }
+
+        Cost = distances[EndArtistNode];
     }
 }

@@ -6,51 +6,50 @@ namespace NettspendSautiPhase1
 {
     class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            // Create a network of artists
-            NetworkOfArtists network = new NetworkOfArtists();
+            ArtistNetwork artistNetwork = new ArtistNetwork();
 
-            // Create an Expander with the network
-            Expander expander = new Expander(network);
-
-            // Create a Drake artist to start the expansion
-            Artist drake = new Artist("Drake");
-
-            // Expand the network 3 times starting from Drake
-            expander.Expand(drake, 6);
-
-            // Display all the artists found in the network
+            string apiKey = "00751a650c0182344603b9252c66d416";
+            
+            ArtistExpander expander = new ArtistExpander(artistNetwork, apiKey);
+            
+            ArtistNode starter = new ArtistNode("Drake");
+            
+            expander.Expand(starter, 7);
+            
             Console.WriteLine("Artists found in the network:");
-            network.PrintAdjacencyMatrix();
+            artistNetwork.PrintAdjacencyMatrix();
 
-            // Prompt user for the two artists they want to find the shortest path between
-            Console.WriteLine("Enter the name of the first artist:");
-            string startArtistName = Console.ReadLine();
-            Console.WriteLine("Enter the name of the second artist:");
-            string endArtistName = Console.ReadLine();
-
-            // Find the artists in the network
-            Artist startArtist = network.AdjacencyMatrix.Keys.FirstOrDefault(a => a.Name.Equals(startArtistName, StringComparison.OrdinalIgnoreCase));
-            Artist endArtist = network.AdjacencyMatrix.Keys.FirstOrDefault(a => a.Name.Equals(endArtistName, StringComparison.OrdinalIgnoreCase));
-
-            if (startArtist == null || endArtist == null)
+            while (true)
             {
-                Console.WriteLine("One or both artists not found in the network.");
-                return;
-            }
+                Console.WriteLine("Enter the name of the first artist:");
+                string startArtistName = Console.ReadLine();
+                Console.WriteLine("Enter the name of the second artist:");
+                string endArtistName = Console.ReadLine();
+            
+                
+                ArtistNode startArtistNode = artistNetwork.AdjacencyMatrix.Keys.FirstOrDefault(a => a.Name.Equals(startArtistName, StringComparison.OrdinalIgnoreCase));
+                ArtistNode endArtistNode = artistNetwork.AdjacencyMatrix.Keys.FirstOrDefault(a => a.Name.Equals(endArtistName, StringComparison.OrdinalIgnoreCase));
 
-            // Create a Traveller to find the shortest path between the two artists
-            Traveller traveller = new Traveller(startArtist, endArtist, network);
-            traveller.Traverse();
+                if (startArtistNode == null || endArtistNode == null)
+                {
+                    Console.WriteLine("One or both artists not found in the network.");
+                    continue;
+                }
 
-            // Output the shortest path and the total similarity score
-            Console.WriteLine("Shortest path from " + startArtist.Name + " to " + endArtist.Name + ":");
-            foreach (var artist in traveller.Path)
-            {
-                Console.WriteLine(artist.Name);
+                Traveller traveller = new Traveller(startArtistNode, endArtistNode, artistNetwork);
+                traveller.Traverse();
+
+
+                Console.WriteLine("Shortest path from " + startArtistNode.Name + " to " + endArtistNode.Name + ":");
+                foreach (var artist in traveller.Path)
+                {
+                    Console.WriteLine(artist.Name);
+                }
+                Console.WriteLine($"Total similarity score: {traveller.Cost}");
             }
-            Console.WriteLine($"Total similarity score: {traveller.Cost}");
+            
         }
     }
 }

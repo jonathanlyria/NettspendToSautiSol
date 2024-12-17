@@ -12,3 +12,4 @@
 /Users/jonathan/RiderProjects/NettspendSautiPhase1/NettspendSautiPhase1/obj/Debug/net9.0/NettspendSautiPhase1.pdb
 /Users/jonathan/RiderProjects/NettspendSautiPhase1/NettspendSautiPhase1/obj/Debug/net9.0/NettspendSautiPhase1.genruntimeconfig.cache
 /Users/jonathan/RiderProjects/NettspendSautiPhase1/NettspendSautiPhase1/obj/Debug/net9.0/ref/NettspendSautiPhase1.dll
+/Users/jonathan/RiderProjects/NettspendSautiPhase1/NettspendSautiPhase1/obj/Debug/net9.0/NettspendSautiPhase1.sourcelink.json

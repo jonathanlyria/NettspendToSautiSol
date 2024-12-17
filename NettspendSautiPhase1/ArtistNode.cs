@@ -1,19 +1,18 @@
 namespace NettspendSautiPhase1
 {
-    public class Artist
+    public class ArtistNode : Node
     {
         public string Name { get; set; }
-        public List<Connection> Connections { get; set; }
 
-        public Artist(string name)
+        public ArtistNode(string name)
+            : base(name) // Passes the name as the Identifier to the base Node
         {
             Name = name;
-            Connections = new List<Connection>();
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is Artist other)
+            if (obj is ArtistNode other)
             {
                 return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
             }
