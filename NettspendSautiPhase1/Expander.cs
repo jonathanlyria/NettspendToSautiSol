@@ -2,19 +2,16 @@ using System.Text.Json;
 
 namespace NettspendSautiPhase1
 {
-    public abstract class Expander<TNetwork, TNode, TEdge>
-        where TNetwork : Network<TNode, TEdge>
+    public abstract class Expander<TNode, TEdge>
         where TNode : Node
-        where TEdge : Edge
+        where TEdge : Edge<TNode>
     {
         protected string ApiKey; // API key to be set or injected
         protected Queue<TNode> Queue { get; set; }
-        protected TNetwork Network { get; set; }
 
-        protected Expander(TNetwork network)
+        protected Expander()
         {
             Queue = new Queue<TNode>();
-            Network = network;
         }
         
         public void Expand(TNode startingNode, int numIterations)
@@ -51,6 +48,10 @@ namespace NettspendSautiPhase1
         }
         
         protected abstract List<TNode> GetConnections(TNode node);
+        
+        protected abstract void AddConnection(TNode node1, TNode node2, double weight); 
+        
+        protected abstract void AddNode(TNode node);
 
         protected static string BuildUrlWithParams(string url, Dictionary<string, string> parameters)
         {
@@ -61,5 +62,10 @@ namespace NettspendSautiPhase1
             }
             return $"{url}?{string.Join("&", paramList)}";
         }
+        
+        protected virtual bool RateLimitExceeded()
+        {
+            return false;
+        }   
     }
 }

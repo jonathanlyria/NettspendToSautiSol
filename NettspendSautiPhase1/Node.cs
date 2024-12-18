@@ -2,13 +2,13 @@ namespace NettspendSautiPhase1
 {
     public abstract class Node
     {
-        public List<Edge> Connections { get; set; }
-        public string Identifier { get; set; }
+        public List<Edge<Node>> Connections { get; set; } // Connections for the node
+        public string Identifier { get; set; } // Unique identifier (string type for flexibility)
 
-        public Node(string identifier)
+        protected Node(string identifier)
         {
             Identifier = identifier;
-            Connections = new List<Edge>();
+            Connections = new List<Edge<Node>>();
         }
 
         public override bool Equals(object obj)

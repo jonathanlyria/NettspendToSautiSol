@@ -2,80 +2,94 @@ namespace NettspendSautiPhase1
 {
     public class ArtistNetwork : Network<ArtistNode, ArtistEdge>
     {
-        public override void AddConnection(ArtistNode artist1, ArtistNode artist2, double weight)
+        private readonly DatabaseManager _databaseManager;
+
+        public ArtistNetwork(DatabaseManager databaseManager)
         {
-            if (!AdjacencyMatrix.ContainsKey(artist1) || !AdjacencyMatrix.ContainsKey(artist2))
-                return;
-
-            var reverseConnection = AdjacencyMatrix[artist2]
-                .FirstOrDefault(c => c.Node2 == artist1);
-            var forwardConnection = AdjacencyMatrix[artist1]
-                .FirstOrDefault(c => c.Node1 == artist2);
-
-            // Scenario 1: Both are empty
-            if (forwardConnection == null && reverseConnection == null)
+            _databaseManager = databaseManager;
+            LoadNetworkFromDatabase();
+        }
+        private void LoadNetworkFromDatabase()
+        {
+            // Fetch all artists from the database
+            var allArtists = _databaseManager.GetAllArtists();
+            foreach (var artist in allArtists)
             {
-                var forward = new ArtistEdge(artist1, artist2, weight, false);
-                var reverse = new ArtistEdge(artist2, artist1, weight, true);
-
-                AdjacencyMatrix[artist1].Add(forward);
-                artist1.Connections.Add(forward);
-
-                AdjacencyMatrix[artist2].Add(reverse);
-                artist2.Connections.Add(reverse);
+                AddNode(artist);
             }
-            // Scenario 2: Forward is empty, reverse has connection
-            else if (forwardConnection == null && reverseConnection != null)
+
+            // Fetch all connections from the database
+            var edges = _databaseManager.GetAllConnections();
+            foreach (var edge in edges)
             {
-                var connection = new ArtistEdge(artist1, artist2, weight, false);
-                AdjacencyMatrix[artist1].Add(connection);
-                artist1.Connections.Add(connection);
-            }
-            // Scenario 3: Forward has connection, reverse is empty
-            else if (forwardConnection != null && reverseConnection == null)
-            {
-                var connection = new ArtistEdge(artist2, artist1, weight, true);
-                AdjacencyMatrix[artist2].Add(connection);
-                artist2.Connections.Add(connection);
-            }
-            // Scenario 4: Forward is placeholder
-            else if (forwardConnection != null && reverseConnection != null && forwardConnection.IsPlaceholder)
-            {
-                AdjacencyMatrix[artist1].Remove(forwardConnection);
-                var connection = new ArtistEdge(artist1, artist2, weight, false);
-                AdjacencyMatrix[artist1].Add(connection);
-            }
-            // Scenario 5: Reverse is placeholder
-            else if (forwardConnection != null && reverseConnection != null && reverseConnection.IsPlaceholder)
-            {
-                AdjacencyMatrix[artist2].Remove(reverseConnection);
-                var connection = new ArtistEdge(artist2, artist1, weight, false);
-                AdjacencyMatrix[artist2].Add(connection);
+                // Add the connection to the adjacency matrix
+                if (edge.Node1 != null && edge.Node2 != null)
+                {
+                    AddConnection(edge.Node1, edge.Node2, edge.Weight);
+                }
             }
         }
 
-        /* Uncomment and adjust if needed
-        public override void PrintAdjacencyMatrix()
+
+        protected override void AddConnection(ArtistNode node1, ArtistNode node2, double weight)
         {
-            foreach (var artist in AdjacencyMatrix.Keys)
+            if (node1 == null || node2 == null) return;
+
+            // Check if the connection already exists
+            var existingConnection = AdjacencyMatrix[node1]?.FirstOrDefault(edge => edge.Node2 == node2);
+            if (existingConnection != null) return;
+
+            // Create the new edge and update the adjacency matrix
+            var edge = new ArtistEdge(node1, node2, weight, false);
+            AdjacencyMatrix[node1].Add(edge);
+            AdjacencyMatrix[node2].Add(edge);
+        }
+
+        public virtual List<ArtistEdge> GetListOfConnections(ArtistNode node)
+        {
+            if (!AdjacencyMatrix.ContainsKey(node))
+                return new List<ArtistEdge>();
+
+            return AdjacencyMatrix[node].Where(c => c.Node1 == node).ToList();
+        }
+
+        public void PrintMatrix()
+        {
+            // Get all artist nodes
+            var nodes = AdjacencyMatrix.Keys.ToList();
+
+            // Print header row (artist names)
+            Console.Write("     "); // Padding for the top-left corner
+            foreach (var node in nodes)
             {
-                Console.WriteLine($": {artist.Name}");
-                foreach (var connection in AdjacencyMatrix[artist])
+                Console.Write($"{node.Name,-15}");
+            }
+            Console.WriteLine();
+
+            // Print rows
+            foreach (var rowNode in nodes)
+            {
+                // Print the row artist name
+                Console.Write($"{rowNode.Name,-15}");
+
+                // Print connection weights
+                foreach (var colNode in nodes)
                 {
-                    var connectedArtist = connection.Node1 == artist ? connection.Node2 : connection.Node1;
-                    Console.WriteLine($"- {connectedArtist.Name} (Match: {connection.Weight})");
+                    var connection = AdjacencyMatrix[rowNode]
+                        .FirstOrDefault(edge => edge.Node2 == colNode || edge.Node1 == colNode);
+
+                    if (connection != null)
+                    {
+                        Console.Write($"{connection.Weight,-15:F2}"); // Print weight with 2 decimal places
+                    }
+                    else
+                    {
+                        Console.Write($"{"-", -15}"); // No connection
+                    }
                 }
                 Console.WriteLine();
             }
         }
-        */
 
-        public List<ArtistEdge> GetConnections(ArtistNode artistNode)
-        {
-            if (!AdjacencyMatrix.ContainsKey(artistNode))
-                return new List<ArtistEdge>();
-
-            return AdjacencyMatrix[artistNode].Cast<ArtistEdge>().ToList();
-        }
     }
 }

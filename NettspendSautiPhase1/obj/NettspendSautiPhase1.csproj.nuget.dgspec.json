@@ -36,13 +36,27 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "all"
+          "auditMode": "direct"
         },
         "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.Data.Sqlite": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
+            "SQL": {
+              "target": "Package",
+              "version": "[1.0.0.1, )"
+            },
+            "SQLite": {
+              "target": "Package",
+              "version": "[3.13.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -59,7 +73,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/Users/jonathan/.dotnet/sdk/9.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.101/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

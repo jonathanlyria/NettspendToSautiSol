@@ -1,18 +1,16 @@
-namespace NettspendSautiPhase1
+namespace NettspendSautiPhase1;
+public abstract class Edge<TNode> where TNode : Node
 {
-    public abstract class Edge
-    {
-        public Node Node1 { get; set; }
-        public Node Node2 { get; set; }
-        public double Weight { get; set; }
-        public bool IsPlaceholder { get; set; }
+    public TNode Node1 { get; set; }
+    public TNode Node2 { get; set; }
+    public double Weight { get; set; }
+    public bool IsPlaceholder { get; set; }
 
-        public Edge(Node node1, Node node2, double weight, bool isPlaceholder = false)
-        {
-            Node1 = node1;
-            Node2 = node2;
-            Weight = weight;
-            IsPlaceholder = isPlaceholder;
-        }
+    public Edge(TNode node1, TNode node2, double weight, bool isPlaceholder = false)
+    {
+        Node1 = node1;
+        Node2 = node2;
+        Weight = weight;
+        IsPlaceholder = isPlaceholder;
     }
 }

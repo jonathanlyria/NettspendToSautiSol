@@ -1,6 +1,6 @@
 namespace NettspendSautiPhase1;
 
-public class Traveller
+public abstract class Traveller
 {
     public ArtistNode StartArtistNode { get; set; }
     public ArtistNode EndArtistNode { get; set; }
@@ -40,7 +40,7 @@ public class Traveller
             if (currentArtist.Equals(EndArtistNode))
                 break;
 
-            foreach (var connection in ArtistNetwork.GetConnections(currentArtist))
+            foreach (var connection in ArtistNetwork.GetListOfConnections(currentArtist))
             {
                 var neighbor = connection.Node2 as ArtistNode;
                 double newDist = currentDistance + connection.Weight;
