@@ -2,28 +2,20 @@ namespace NettspendSautiPhase1
 {
     public class ArtistNode : Node
     {
-        public string ArtistID { get; set; } // Unique ID for the artist
-        public string Name { get; set; } // Artist name
+        public string Name { get; } // Artist name
 
-        public ArtistNode(string artistId, string name)
-            : base(artistId) // Use ArtistID as the base identifier
+        public ArtistNode(string name) : base(name)
         {
-            ArtistID = artistId;
             Name = name;
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is ArtistNode other)
-            {
-                return ArtistID == other.ArtistID; // Compare by unique ID
-            }
-            return false;
+            return obj is ArtistNode other && Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase);
         }
-
         public override int GetHashCode()
         {
-            return ArtistID.GetHashCode(); // Use ArtistID for hash code
+            return Name.ToLowerInvariant().GetHashCode();
         }
     }
 }

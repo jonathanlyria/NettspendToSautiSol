@@ -32,37 +32,52 @@ public class ArtistExpander : Expander<ArtistNode, ArtistEdge>
 
             if (response.IsSuccessStatusCode)
             {
+                Console.WriteLine(response);
+                string time = DateTime.UtcNow.ToString();
+                _databaseManager.UpdateLastExpanded(startingArtistNode.Name, time);
+                
                 string jsonResponse = response.Content.ReadAsStringAsync().Result;
                 JsonDocument document = JsonDocument.Parse(jsonResponse);
-
+                Console.WriteLine(jsonResponse);
+                Console.WriteLine(document);
+                
+                if (!IsDataValid(document)) return similarArtistsList;
+                
                 var similarArtists = document.RootElement.GetProperty("similarartists")
                     .GetProperty("artist").EnumerateArray();
+                
 
                 foreach (var artistData in similarArtists)
                 {
-                    string foundArtist = artistData.GetProperty("name").GetString();
-                    string foundIdentifier = artistData.GetProperty("mbid").GetString();
-                    double foundMatch = Convert.ToDouble(artistData.GetProperty("match").GetString());
+                    Console.WriteLine(artistData);
+                    if (!DoesArtistHaveNameAndMatch(artistData)) continue;
                     
-                    ArtistNode foundArtistNode = new ArtistNode(foundIdentifier, foundArtist);
-
-                    // Skip duplicates and self-references
-                    if (ShouldSkipArtist(foundArtist, foundIdentifier)) continue;
+                    string foundArtist = artistData.GetProperty("name").GetString();
+                    double match = Convert.ToDouble(artistData.GetProperty("match").GetString());
+                    
+                    ArtistNode foundArtistNode = new ArtistNode(foundArtist);
+                    if (ShouldSkipArtist(foundArtist)) continue;
 
                     Console.WriteLine($"Adding similar artist: {foundArtist}");
-
-                    double match = Convert.ToDouble(artistData.GetProperty("match").GetString());
-
-                    // Save to database
-                    _databaseManager.AddArtist(startingArtistNode.Identifier, startingArtistNode.Name);
-                    _databaseManager.AddArtist(foundIdentifier, foundArtist);
-                    AddConnection(startingArtistNode, foundArtistNode, match); 
                     
-                    // Add to the result list
-                    var similarArtistNode = new ArtistNode(foundIdentifier, foundArtist);
-                    if (!similarArtistsList.Contains(similarArtistNode))
+             
+                    if (!_databaseManager.DoesArtistExist(foundArtist))
                     {
-                        similarArtistsList.Add(similarArtistNode);
+                        _databaseManager.AddArtist(foundArtist);
+                    }
+
+                    if (_databaseManager.DoesConnectionExist(startingArtistNode.Name, foundArtist))
+                    {
+                        _databaseManager.UpdateConnectionStrength(startingArtistNode.Name, foundArtistNode.Name, match);
+                    }
+                    else
+                    {
+                        _databaseManager.AddConnection(startingArtistNode.Name, foundArtistNode.Name, match);
+                    }
+                    
+                    if (!similarArtistsList.Contains(foundArtistNode))
+                    {
+                        similarArtistsList.Add(foundArtistNode);
                     }
                 }
             }
@@ -71,74 +86,22 @@ public class ArtistExpander : Expander<ArtistNode, ArtistEdge>
                 Console.WriteLine($"Error: {response.StatusCode}");
             }
         }
-
         return similarArtistsList;
     }
-
-    protected override void AddNode(ArtistNode node)
+    protected override void AddConnection(ArtistNode artist1, ArtistNode artist2, double weight)
     {
-        if (!ShouldSkipArtist(node.Name, node.Identifier))
-        {
-            _databaseManager.AddArtist(node.Identifier, node.Name);
-        }
-    } 
- 
-      protected override void AddConnection(ArtistNode artist1, ArtistNode artist2, double weight)
-       {
-           if (artist1 == null || artist2 == null || _databaseManager == null)
-               return;
-       
-           // Add the connection to the database with placeholder logic
-           var forwardConnection = _databaseManager.GetConnection(artist1.Identifier, artist2.Identifier);
-           var backwardConnection = _databaseManager.GetConnection(artist2.Identifier, artist1.Identifier);
-       
-           // Check if the forward connection is a placeholder
-           bool isForwardConnectionPlaceholder = forwardConnection != null && _databaseManager.IsPlaceholder(artist1, artist2);
-       
-           // Check if the backward connection is a placeholder
-       
-           // Case 1: Both forward and backward connections do not exist
-           if (forwardConnection == null && backwardConnection == null)
-           {
-               // Add the forward and backward connections
-               _databaseManager.AddConnection(artist1.Identifier, artist2.Identifier, weight, false);
-               _databaseManager.AddConnection(artist2.Identifier, artist1.Identifier, weight, true);
-           }
-           // Case 2: Only the backward connection exists
-           else if (forwardConnection == null && backwardConnection != null)
-           {
-               // Add the forward connection
-               _databaseManager.AddConnection(artist1.Identifier, artist2.Identifier, weight, false);
-           }
-           // Case 3: Only the forward connection exists
-           else if (forwardConnection != null && backwardConnection == null)
-           {
-               // Add the backward connection
-               _databaseManager.AddConnection(artist2.Identifier, artist1.Identifier, weight, true);
-           }
-           // Case 4: Forward connection exists and is a placeholder
-           else if (forwardConnection != null && isForwardConnectionPlaceholder)
-           {
-               _databaseManager.RemoveConnection(artist1.Identifier, artist2.Identifier);
-               _databaseManager.AddConnection(artist1.Identifier, artist2.Identifier, weight, false);
-           }
-       }
-
-   
-    private bool ShouldSkipArtist(string name, string identifier)
+          
+    }
+    protected override void AddNode(ArtistNode artist)
     {
-        // Check the database for existing artist based on name and identifier
-        var existingArtist = _databaseManager.GetArtistByIdentifier(identifier);
-        if (existingArtist != null)
-        {
-            Console.WriteLine($"Skipping artist: {name}, because it already exists in the database with identifier {identifier}.");
-            return true;
-        }
-        
-        List<ArtistNode> similarArtists = _databaseManager.GetArtistsByName(name);
+     
+    }
+    private bool ShouldSkipArtist(string name)
+    {
+        List<ArtistNode> similarArtists = _databaseManager.GetAllSimilarArtistNames(name);
         foreach (ArtistNode artist in similarArtists)
         {
-            if (name.IndexOf(artist.Name, StringComparison.OrdinalIgnoreCase) >= 0 && !name.Contains('&'))
+            if (name.IndexOf(artist.Name, StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 Console.WriteLine($"Skipping similar artist: {name}, because it contains {artist.Name}.");
                 return true;
@@ -146,5 +109,25 @@ public class ArtistExpander : Expander<ArtistNode, ArtistEdge>
         }
 
         return false;
+    }
+
+
+    private bool IsDataValid(JsonDocument document)
+    {
+        if (!document.RootElement.TryGetProperty("similarartists", out var similarArtistsElement) || 
+            !similarArtistsElement.TryGetProperty("artist", out var artistArrayElement))
+        {
+            Console.WriteLine("The response does not contain valid 'similarartists' or 'artist' data.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool DoesArtistHaveNameAndMatch(JsonElement artistData)
+    {
+        string? checkArtist = artistData.GetProperty("name").GetString();
+        string? checkMatch = artistData.GetProperty("match").GetString();
+        return (checkMatch != null || checkArtist != null);
     }
 }

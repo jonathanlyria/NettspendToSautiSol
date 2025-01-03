@@ -22,74 +22,50 @@ namespace NettspendSautiPhase1
             var edges = _databaseManager.GetAllConnections();
             foreach (var edge in edges)
             {
-                // Add the connection to the adjacency matrix
-                if (edge.Node1 != null && edge.Node2 != null)
-                {
-                    AddConnection(edge.Node1, edge.Node2, edge.Weight);
-                }
+                AddConnection(edge.Node1, edge.Node2, edge.Weight);
             }
         }
 
-
+        protected override void AddNode(ArtistNode node)
+        {
+            if (!AdjacencyMatrix.ContainsKey(node))
+            {
+                AdjacencyMatrix[node] = new List<ArtistEdge>();
+            }
+        }
+        
         protected override void AddConnection(ArtistNode node1, ArtistNode node2, double weight)
         {
-            if (node1 == null || node2 == null) return;
-
-            // Check if the connection already exists
-            var existingConnection = AdjacencyMatrix[node1]?.FirstOrDefault(edge => edge.Node2 == node2);
-            if (existingConnection != null) return;
-
-            // Create the new edge and update the adjacency matrix
-            var edge = new ArtistEdge(node1, node2, weight, false);
-            AdjacencyMatrix[node1].Add(edge);
-            AdjacencyMatrix[node2].Add(edge);
+            var edge1 = new ArtistEdge(node1, node2, weight);
+            AdjacencyMatrix[node1].Add(edge1);
+            var edge2 = new ArtistEdge(node2, node1, weight);
+            AdjacencyMatrix[node2].Add(edge2);
         }
+       
 
         public virtual List<ArtistEdge> GetListOfConnections(ArtistNode node)
         {
             if (!AdjacencyMatrix.ContainsKey(node))
                 return new List<ArtistEdge>();
 
-            return AdjacencyMatrix[node].Where(c => c.Node1 == node).ToList();
+            return AdjacencyMatrix[node].ToList();
         }
 
         public void PrintMatrix()
         {
-            // Get all artist nodes
-            var nodes = AdjacencyMatrix.Keys.ToList();
-
-            // Print header row (artist names)
-            Console.Write("     "); // Padding for the top-left corner
-            foreach (var node in nodes)
+            foreach (var node in AdjacencyMatrix.Keys)
             {
-                Console.Write($"{node.Name,-15}");
-            }
-            Console.WriteLine();
+                // Print the artist name
+                Console.WriteLine(node.Name);
 
-            // Print rows
-            foreach (var rowNode in nodes)
-            {
-                // Print the row artist name
-                Console.Write($"{rowNode.Name,-15}");
-
-                // Print connection weights
-                foreach (var colNode in nodes)
+                // Get all connections for the artist
+                foreach (var connection in AdjacencyMatrix[node])
                 {
-                    var connection = AdjacencyMatrix[rowNode]
-                        .FirstOrDefault(edge => edge.Node2 == colNode || edge.Node1 == colNode);
-
-                    if (connection != null)
-                    {
-                        Console.Write($"{connection.Weight,-15:F2}"); // Print weight with 2 decimal places
-                    }
-                    else
-                    {
-                        Console.Write($"{"-", -15}"); // No connection
-                    }
+                    Console.WriteLine($"  {connection.Node2.Name} ({connection.Weight:F2})");
                 }
-                Console.WriteLine();
             }
         }
+
 
     }
 }

@@ -19,10 +19,5 @@ namespace NettspendSautiPhase1
             }
             return false;
         }
-
-        public override int GetHashCode()
-        {
-            return Identifier.ToLowerInvariant().GetHashCode();
-        }
     }
 }

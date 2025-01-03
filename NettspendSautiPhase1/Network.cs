@@ -11,7 +11,7 @@ namespace NettspendSautiPhase1
             AdjacencyMatrix = new Dictionary<TNode, List<TConnection>>();
         }
 
-        protected void AddNode(TNode node)
+        protected virtual void AddNode(TNode node)
         {
             if (!AdjacencyMatrix.ContainsKey(node))
             {
