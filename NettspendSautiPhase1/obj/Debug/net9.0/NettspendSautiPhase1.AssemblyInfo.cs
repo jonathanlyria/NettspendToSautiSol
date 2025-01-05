@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NettspendSautiPhase1")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d5bbf3add83574eeb78cf2c8cd4578b020a56a3d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ebc0e6200b053f37667cf30fe7754fbee28b101c")]
 [assembly: System.Reflection.AssemblyProductAttribute("NettspendSautiPhase1")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NettspendSautiPhase1")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -7,13 +7,19 @@ namespace NettspendSautiPhase1
     class Program
     {
         private static void Main(string[] args)
-        { 
-           string databasePath = "/Users/jonathan/RiderProjects/NettspendSautiPhase1/NettspendSautiPhase1/database.db";            
-           DatabaseManager database = new DatabaseManager(databasePath);
-           InitializeDatabase(database);
-           TestTraveller(database);
+        {
+            string databasePath = "/Users/jonathan/RiderProjects/NettspendSautiPhase1/NettspendSautiPhase1/database.db";
+            DatabaseManager database = new DatabaseManager(databasePath);
+            // InitializeDatabase(database);
+            database.PrintDatabaseToTerminal();
 
-           
+            var travellerPath = TestTraveller(database);
+            string firstArtist = travellerPath.First().Name;
+            string lastArtist = travellerPath.Last().Name;
+
+            PlaylistCreator testPlaylist = new PlaylistCreator(travellerPath, 2, true, firstArtist, lastArtist);
+         
+
         }
         
         private static void InitializeDatabase(DatabaseManager database)
@@ -31,26 +37,25 @@ namespace NettspendSautiPhase1
 
         }
 
-        private static void TestTraveller(DatabaseManager database)
+        private static List<ArtistNode> TestTraveller(DatabaseManager database)
         {
             ArtistNetwork artistNetwork = new ArtistNetwork(database);
             artistNetwork.PrintMatrix();
-            while (true)
-            {
-                
-                Console.WriteLine("Enter artist 1: ");
-                string artist1 = Console.ReadLine();
-                ArtistNode artist1Node = new ArtistNode(artist1);
-                Console.WriteLine("Enter artist 2: ");
-                string artist2 = Console.ReadLine();
-                ArtistNode artist2Node = new ArtistNode(artist2);
-                
-                ArtistTraveller traveller = new ArtistTraveller(artist1Node, artist2Node, artistNetwork);
-                traveller.Traverse();
-                
-                traveller.PrintPath();
-                
-            }
+            
+            Console.WriteLine("Enter artist 1: ");
+            string artist1 = Console.ReadLine();
+            ArtistNode artist1Node = new ArtistNode(artist1);
+            Console.WriteLine("Enter artist 2: ");
+            string artist2 = Console.ReadLine();
+            ArtistNode artist2Node = new ArtistNode(artist2);
+            
+            ArtistTraveller traveller = new ArtistTraveller(artist1Node, artist2Node, artistNetwork);
+            traveller.Traverse();
+            traveller.PrintPath();
+
+            return traveller.Path;
+            
+            
         }
     }
 }
