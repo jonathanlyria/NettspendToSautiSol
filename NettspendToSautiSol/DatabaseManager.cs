@@ -280,20 +280,38 @@ public class DatabaseManager
        return connections;
    }
 
-   public Queue<ArtistNode>? GetExpanderQueue()
+   public PriorityQueue<ArtistNode, double>? GetExpanderQueue()
    {
-       var queue = new Queue<ArtistNode>();
+       var queue = new PriorityQueue<ArtistNode, double>();
        using (var connection = new SqliteConnection(_connectionString))
        {
            connection.Open();
 
            // Prioritize nulls first, then order by LastExpanded DESC
            string selectQuery = @"
-            SELECT ArtistName, LastExpanded 
-            FROM Artist 
+            SELECT 
+                A.ArtistName,
+                CASE 
+                    WHEN A.LastExpanded IS NULL THEN 2 - IFNULL(C.ConnectionStrength, 0)
+                    ELSE 1 - IFNULL(C.ConnectionStrength, 0)
+                END AS Priority,
+                A.LastExpanded
+            FROM 
+                Artist A
+            LEFT JOIN 
+                Connections C 
+            ON 
+                A.ArtistName = C.ArtistName1
+                AND C.ConnectionID = (
+                    SELECT ConnectionID 
+                    FROM Connections 
+                    WHERE ArtistName1 = A.ArtistName 
+                    ORDER BY ConnectionID DESC 
+                    LIMIT 1
+                )
             ORDER BY 
-                CASE WHEN LastExpanded IS NULL THEN 0 ELSE 1 END ASC, 
-                LastExpanded DESC;";
+                Priority DESC,
+                A.LastExpanded ASC;";
                 
            using (var cmd = new SqliteCommand(selectQuery, connection))
            {
@@ -303,9 +321,8 @@ public class DatabaseManager
                    while (reader.Read())
                    {
                        string artistName = reader.GetString(0);
-                       string? lastExpanded = reader.IsDBNull(1) ? null : reader.GetString(1);
-                       queue.Enqueue(new ArtistNode(artistName));
-                       Console.WriteLine($"{artistName}: Last Expanded = {lastExpanded ?? "NULL"}");
+                       double priority = reader.GetDouble(1);
+                       queue.Enqueue(new ArtistNode(artistName), priority);
                    }
                }
            }
