@@ -28,13 +28,15 @@ namespace NettspendToSautiSol
 
            // Queue = _databaseManager.GetExpanderQueue();
            Queue = new PriorityQueue<ArtistNode, double>();
-           Queue.Enqueue(new ArtistNode("Nettspend"), 0);
+           Queue.Enqueue(new ArtistNode("Rema"), 0);
 
             _accessToken = _spotifyClientCredentials.GetAccessTokenAsync().Result.AccessToken;
             _tokenExpiryTime = DateTime.UtcNow.AddSeconds(_spotifyClientCredentials.GetAccessTokenAsync().Result.ExpiresIn);
+
+            Expand();
         }
 
-        public void Expand()
+        private void Expand()
         {
             HashSet<ArtistNode> visited = new HashSet<ArtistNode>();
             int callCount = 0;
@@ -64,8 +66,8 @@ namespace NettspendToSautiSol
 
                     foreach (var connection in connections)
                     {
-                        Console.WriteLine($"Comparing {connection.Key.Name} to Sauti Sol");
-                        if (connection.Key.Name == "Sauti Sol")
+                        Console.WriteLine($"Comparing {connection.Key.Name} to Nettspend");
+                            if (connection.Key.Name == "Nettspend")
                         {
                             return;
                         }
@@ -114,7 +116,7 @@ namespace NettspendToSautiSol
                     { "artist", startingArtistNode.Name },
                     { "api_key", _apiKey },
                     { "format", "json" },
-                    { "limit", "25"}
+                    { "limit", "20"}
                 };
 
                 var response = client.GetAsync(BuildUrlWithParams(url, parameters)).Result;

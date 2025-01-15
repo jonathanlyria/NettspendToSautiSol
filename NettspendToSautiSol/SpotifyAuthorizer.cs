@@ -11,16 +11,16 @@ public class SpotifyAuthorizer
     private readonly string clientSecret = "34009c71d59748a09bf3867de0f8869e";
     private readonly string _redirectUri = "http://localhost:8888/callback/";
     private string? _accessToken;
+    public string Reason;
     
-    public string GetAuthoizationPKCEAccessToken()
+    public string GetAuthorizationPKCEAccessToken()
     {
         if (!string.IsNullOrEmpty(_accessToken))
             return _accessToken;
 
         string codeVerifier = GenerateCodeVerifier();
         string codeChallenge = GenerateCodeChallenge(codeVerifier);
-
-        // Start the local HTTP server
+        
         using HttpListener listener = new();
         listener.Prefixes.Add(_redirectUri);
         listener.Start();
@@ -34,11 +34,15 @@ public class SpotifyAuthorizer
         listener.Stop();
 
         if (string.IsNullOrEmpty(query) || !query.Contains("code="))
-            throw new Exception("Authorization failed. No code received.");
-
-        string authorizationCode = HttpUtility.ParseQueryString(query).Get("code")!;
-
-        return ExchangeAuthorizationCodeForAccessToken(authorizationCode, codeVerifier);
+        {
+            return "Did not finish signing in";
+        }
+        else
+        {
+            string authorizationCode = HttpUtility.ParseQueryString(query).Get("code")!;
+            return ExchangeAuthorizationCodeForAccessToken(authorizationCode, codeVerifier);
+        }
+      
     }
 
     private void OpenBrowserForAuthorization(string codeChallenge)

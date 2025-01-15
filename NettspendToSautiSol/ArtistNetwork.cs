@@ -22,7 +22,7 @@ namespace NettspendToSautiSol
             var edges = _databaseManager.GetAllConnections();
             foreach (var edge in edges)
             {
-                AddConnection(edge.Node1, edge.Node2, edge.Weight);
+                AddConnection(edge.Node1, edge.Node2, (1-edge.Weight)*(1-edge.Weight));
             }
         }
 
@@ -36,6 +36,12 @@ namespace NettspendToSautiSol
         
         protected override void AddConnection(ArtistNode node1, ArtistNode node2, double weight)
         {
+            if (!AdjacencyMatrix.ContainsKey(node1))
+                AddNode(node1);
+
+            if (!AdjacencyMatrix.ContainsKey(node2))
+                AddNode(node2);
+
             var edge1 = new ArtistEdge(node1, node2, weight);
             AdjacencyMatrix[node1].Add(edge1);
             var edge2 = new ArtistEdge(node2, node1, weight);

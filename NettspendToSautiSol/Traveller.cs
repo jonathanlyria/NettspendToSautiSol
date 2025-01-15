@@ -15,6 +15,7 @@ public abstract class Traveller
         ArtistNetwork = artistNetwork;
         Path = new List<ArtistNode>();
         Cost = double.MaxValue;
+        Traverse();
     }
 
     public void Traverse()

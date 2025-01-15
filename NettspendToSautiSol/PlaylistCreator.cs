@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace NettspendToSautiSol
 {
@@ -7,23 +8,17 @@ namespace NettspendToSautiSol
     {
         private readonly List<ArtistNode> _artists;
         private readonly int _tracksPerArtist;
-        private readonly string _firstArtist;
-        private readonly string _secondArtist;
         private readonly bool _lookForFeatures;
         private SpotifyAuthorizer _spotifyAuthorizer;
+        private List<string> _songs;
         private readonly string _accessToken;
         
-        public PlaylistCreator(List<ArtistNode> artists, int tracksPerArtist, bool lookForFeatures, string firstArtist, string secondArtist)
+        public PlaylistCreator(List<ArtistNode> artists, int tracksPerArtist, bool lookForFeatures, string firstArtist, string secondArtist, string _pkceToken)
         {
-            _spotifyAuthorizer = new SpotifyAuthorizer();
-            _accessToken = _spotifyAuthorizer.GetAuthoizationPKCEAccessToken();
             _lookForFeatures = lookForFeatures;
+            _songs = new List<string>();
             _artists = artists;
             _tracksPerArtist = tracksPerArtist;
-            _firstArtist = firstArtist;
-            _secondArtist = secondArtist;   
-            
-            AddToPlaylist(GetSongs());
         }
 
 
@@ -78,7 +73,9 @@ namespace NettspendToSautiSol
                 // Prepare the request payload
                 var payload = new
                 {
-                    name = $"from {_firstArtist} to {_secondArtist}",
+                    name = $"from {_artists.First().Name} to {_artists.Last().Name}",
+                    description = $"tool created by @patchmademansa, creates a playlist that transitions between" +
+                                  $" {_artists.First().Name} and {_artists.First().Name}.",
                     @public = true
                 };
 
@@ -106,8 +103,7 @@ namespace NettspendToSautiSol
             }
             
         }
-
-        private void AddToPlaylist(List<string> trackIds)
+        public void AddToPlaylist(List<string> trackIds)
         {
             using (HttpClient client = new HttpClient())
             {
@@ -177,10 +173,9 @@ namespace NettspendToSautiSol
                 Console.WriteLine($"Searching for feature between {artist1.Name} and {artist2.Name}");
                 client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-                // Create the query string for both artists
-                string rawQuery = $"track:{artist1.Name} {artist2.Name}";
-                string encodedQuery = Uri.EscapeDataString(rawQuery);
-                string url = $"https://api.spotify.com/v1/search?q={encodedQuery}&type=track&limit=10";
+                // Create the query stnring for both artists
+                string query = Uri.EscapeDataString($"{artist1.Name} {artist2.Name}");
+                string url = $"https://api.spotify.com/v1/search?q={query}&type=track&limit=10";
 
                 var response = client.GetAsync(url).Result;
                 if (!response.IsSuccessStatusCode) 
@@ -192,29 +187,52 @@ namespace NettspendToSautiSol
                 string jsonResponse = response.Content.ReadAsStringAsync().Result;
                 var document = JsonDocument.Parse(jsonResponse);
 
-                var trackItems = document.RootElement.GetProperty("tracks").GetProperty("items").EnumerateArray();
-                if (trackItems.Count() == 0)
+                if (!document.RootElement.TryGetProperty("tracks", out var tracks) || 
+                    !tracks.TryGetProperty("items", out var items))
                 {
-                    Console.WriteLine("No Feature Found between " + artist1.Name + " and " + artist2.Name);
+                    Console.WriteLine($"No tracks found in search response for {artist1.Name} and {artist2.Name}");
                     return null;
                 }
 
+                var trackItems = items.EnumerateArray();
                 foreach (var track in trackItems)
                 {
                     var artists = track.GetProperty("artists").EnumerateArray();
-                    bool hasArtist1 = artists.Any(a => a.GetProperty("name").GetString() == artist1.Name);
-                    bool hasArtist2 = artists.Any(a => a.GetProperty("name").GetString() == artist2.Name);
+                    bool hasArtist1 = artists.Any(a => string.Equals(a.GetProperty("name").GetString(), artist1.Name, StringComparison.OrdinalIgnoreCase));
+                    bool hasArtist2 = artists.Any(a => string.Equals(a.GetProperty("name").GetString(), artist2.Name, StringComparison.OrdinalIgnoreCase));
 
                     // If both artists are found in the track's artists array, return the song ID
-                    if (hasArtist1 && hasArtist2)
+                    if (hasArtist1 && hasArtist2 && artists.Count() == 2)
                     {
-                        Console.WriteLine("Found Feature: " + track.GetProperty("name").GetString());
+                        Console.WriteLine($"Found Feature: {track.GetProperty("name").GetString()}");
                         song = track.GetProperty("id").GetString();
                         break;
                     }
                 }
+
+                if (song == null)
+                {
+                    Console.WriteLine($"No feature found between {artist1.Name} and {artist2.Name}");
+                }
             }
-            return song; 
+
+            return song;  
+        }
+        private string NormalizeSongName(string songName)
+        {
+            // Convert to lowercase
+            songName = songName.ToLower();
+
+            // Remove content in parentheses or after a dash
+            songName = Regex.Replace(songName, @"\s*-\s*.*|\s*\(.*?\)", "");
+
+            // Remove punctuation
+            songName = Regex.Replace(songName, @"[^\w\s]", "");
+
+            // Remove extra spaces and trim
+            songName = Regex.Replace(songName, @"\s{2,}", " ").Trim();
+
+            return songName;
         }
 
         private List<string> FindSongsForArtist(ArtistNode artist, int tracksPerArtist)
@@ -225,25 +243,53 @@ namespace NettspendToSautiSol
                 Console.WriteLine($"Searching for songs for {artist.Name}");
                 Console.WriteLine($"Number of songs to search for: {tracksPerArtist}");
                 client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
-                
-                string query = $"q=artist:\"{artist.Name}\"&type=track&limit={tracksPerArtist}";
+        
+                string query = $"q=artist:\"{artist.Name}\"&type=track&limit={tracksPerArtist + 10}"; // Fetch extra tracks to filter out songs with features
                 string url = $"https://api.spotify.com/v1/search?{query}";
                 Console.WriteLine(url);
-                
+        
                 var response = client.GetAsync(url).Result;
-                if (!response.IsSuccessStatusCode) {Console.WriteLine("Error: " + response.StatusCode); return songs;}
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Error: " + response.StatusCode);
+                    return songs;
+                }
+        
                 string jsonResponse = response.Content.ReadAsStringAsync().Result;
-                var document = JsonDocument.Parse(jsonResponse); 
+                var document = JsonDocument.Parse(jsonResponse);
                 var topSongs = document.RootElement.GetProperty("tracks").GetProperty("items").EnumerateArray();
+        
                 foreach (var song in topSongs)
                 {
-                    string? songId = song.GetProperty("id").GetString();
-                    if (songId == null)
+                    // Check if the song has only one artist (the primary artist)
+                    var songArtists = song.GetProperty("artists").EnumerateArray();
+                    bool hasFeatures = songArtists.Count() > 1; // More than one artist indicates features
+
+                    if (!hasFeatures)
                     {
-                        break;
+                        string? songId = song.GetProperty("id").GetString();
+                        if (songId != null)
+                        {
+                            string songName = NormalizeSongName(song.GetProperty("name").GetString());
+                            
+                            foreach (var track in _songs) { Console.WriteLine(track); }
+                            
+                            bool isDuplicate = _songs.Any(existingSong =>
+                                existingSong.Contains($" {songName} ") || 
+                                songName.Contains($" {existingSong} ") || 
+                                existingSong.Equals(songName));
+
+                            if (!isDuplicate)
+                            {
+                                Console.WriteLine($"Adding Song {song.GetProperty("name").GetString()} for {artist.Name}");
+                                songs.Add(songId);
+                                _songs.Add(songName);
+                            }
+                        }
                     }
-                    Console.WriteLine($"Adding Song " + song.GetProperty("name").GetString() + $" for {artist.Name}");
-                    songs.Add(songId);
+                    
+                    if (songs.Count >= tracksPerArtist)
+                        break;
                 }
             }
 

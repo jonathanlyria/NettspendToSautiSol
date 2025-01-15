@@ -1,93 +1,126 @@
-﻿using System;
-using System.Linq;
-
-namespace NettspendToSautiSol
+﻿using System.Text.Json;
+namespace NettspendToSautiSolClient
 {
     class Program
     {
-        private static void Main(string[] args)
+        private static readonly HttpClient Client = new();
+        
+
+        private const string
+            BaseUrl = "http://localhost:8888/callback/"; 
+
+        static async Task Main(string[] args)
         {
-            string apiKey = "00751a650c0182344603b9252c66d416";
-            /*
-            string databasePath20 = "/Users/jonathan/RiderProjects/NettspendSautiPhase1/NettspendToSautiSol/database20.db";
-            DatabaseManager database20 = new DatabaseManager(databasePath20);
-            ArtistExpander expander20 = new ArtistExpander(apiKey, database20, 20);
-            string debug20 = expander20.Expand();
-
-
-            string databasePath15 = "/Users/jonathan/RiderProjects/NettspendSautiPhase1/NettspendToSautiSol/database15.db";
-            DatabaseManager database15 = new DatabaseManager(databasePath15);
-            ArtistExpander expander15 = new ArtistExpander(apiKey, database15, 15);
-            string debug15 = expander15.Expand();
-
-            string databasePath10 = "/Users/jonathan/RiderProjects/NettspendSautiPhase1/NettspendToSautiSol/database10.db";
-            DatabaseManager database10 = new DatabaseManager(databasePath10);
-            ArtistExpander expander10 = new ArtistExpander(apiKey, database10, 10);
-            string debug10 = expander10.Expand();
+            string artist1;
+            string artist2;
+            Console.WriteLine("NettspendToSautiSol");
+            await AuthenticateUser();
+            do
+            {
+                Console.WriteLine("Enter Artist 1");
+                artist1 = Console.ReadLine();
+            }while (await CheckArtistExists(artist1));
             
-            string databasePath5 = "/Users/jonathan/RiderProjects/NettspendSautiPhase1/NettspendToSautiSol/database5.db";
-            DatabaseManager database5 = new DatabaseManager(databasePath5);
-            ArtistExpander expander5 = new ArtistExpander(apiKey, database5, 5);
-            string debug5 = expander5.Expand();*/
-            /*
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine(debug20);
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(debug15);
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(debug10);
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(debug5);
-            Console.ResetColor();*/
-            
-            string databasePath3 = "/Users/jonathan/RiderProjects/NettspendSautiPhase1/NettspendToSautiSol/NettspendToSautiSol.db";
-            DatabaseManager database = new DatabaseManager(databasePath3); 
-            ArtistExpander expander = new ArtistExpander(apiKey, database);
-            expander.Expand();
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine(expander.DebugLine);
-            Console.ResetColor();
+            do
+            {
+                Console.WriteLine("Enter Artist 2");
+                artist2 = Console.ReadLine();
+            }while (await CheckArtistExists(artist2));
 
-
+            FindArtistPath(artist1, artist2);
+            CreatePlaylistAsync();
 
 
 
         }
         
-        private static void InitializeDatabase(DatabaseManager database)
+        static async Task AuthenticateUser()
         {
-            string apiKey = "00751a650c0182344603b9252c66d416";
-            
-            ArtistExpander expander = new ArtistExpander(apiKey, database);
-            
-           // ArtistNode starter = new ArtistNode("Drake");
-           // database.AddArtist("Drake");
-            
-            expander.Expand();
-            Console.WriteLine(DateTime.UtcNow.ToString());
-            database.PrintDatabaseToTerminal();
-
+            HttpResponseMessage response = await Client.PostAsync($"{BaseUrl}/authenticate-user", null);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("User authenticated successfully.");
+            }
+            else
+            {
+                Console.WriteLine($"Error authenticating user: {response.StatusCode}");
+            }
         }
 
-        private static List<ArtistNode> TestTraveller(DatabaseManager database)
+        static async Task<bool> CheckArtistExists(string artistName)
         {
-            ArtistNetwork artistNetwork = new ArtistNetwork(database);
-            artistNetwork.PrintMatrix();
-            
-            Console.WriteLine("Enter artist 1: ");
-            string artist1 = Console.ReadLine();
-            ArtistNode artist1Node = new ArtistNode(artist1);
-            Console.WriteLine("Enter artist 2: ");
-            string artist2 = Console.ReadLine();
-            ArtistNode artist2Node = new ArtistNode(artist2);
-            
-            ArtistTraveller traveller = new ArtistTraveller(artist1Node, artist2Node, artistNetwork);
-            traveller.Traverse();
-            traveller.PrintPath();
+            var response = await Client.GetAsync($"{BaseUrl}/artists-exist?artistName={Uri.EscapeDataString(artistName)}");
+            if (response.IsSuccessStatusCode)
+            {
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var result = JsonDocument.Parse(responseBody);
+                if (result.RootElement.GetProperty("ArtistExist").GetBoolean())
+                {
+                    Console.WriteLine("The artist exists in the database.");
+                    return true;
+                }
+                Console.WriteLine("The artist does not exist in the database.");
+            }
+            else
+            {
+                Console.WriteLine($"Error checking artist: {response.StatusCode}");
+            }
 
-            return traveller.Path;
-            
-            
+            return false;
         }
+
+        static async Task FindArtistPath(string artist1, string artist2)
+        {
+            HttpResponseMessage response = await Client.GetAsync($"{BaseUrl}/find-path?artist1={Uri.EscapeDataString(artist1)}&artist2={Uri.EscapeDataString(artist2)}");
+            if (response.IsSuccessStatusCode)
+            {
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var result = JsonDocument.Parse(responseBody);
+
+                Console.WriteLine("Path found:");
+                foreach (var artistName in result.RootElement.GetProperty("path").EnumerateArray())
+                {
+                    Console.WriteLine(artistName);
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Error finding path: {response.StatusCode}");
+            }
+        }
+
+        public static async Task<bool> CreatePlaylistAsync()
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var requestUrl = $"{BaseUrl}/create-playlist";
+                    
+                    var response = await client.GetAsync(requestUrl);
+            
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string responseBody = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine("Playlist created successfully: " + responseBody);
+                        return true;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Failed to create playlist. Status: {response.StatusCode}");
+                        string errorResponse = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine($"Error details: {errorResponse}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+
+            return false;
+        }
+
     }
 }
+       
