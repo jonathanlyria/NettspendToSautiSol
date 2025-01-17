@@ -28,7 +28,6 @@ namespace NettspendToSautiSol
 
            // Queue = _databaseManager.GetExpanderQueue();
            Queue = new PriorityQueue<ArtistNode, double>();
-           Queue.Enqueue(new ArtistNode("Rema"), 0);
 
             _accessToken = _spotifyClientCredentials.GetAccessTokenAsync().Result.AccessToken;
             _tokenExpiryTime = DateTime.UtcNow.AddSeconds(_spotifyClientCredentials.GetAccessTokenAsync().Result.ExpiresIn);
@@ -190,7 +189,7 @@ namespace NettspendToSautiSol
                         Console.WriteLine($"Added {foundArtist} to the database and added a new connection between {startingArtistNode.Name} and {foundArtist}");
                         Console.WriteLine($"Total calls: {_totalCalls++}");
                         Console.ResetColor();
-                        similarArtistDictionary.Add(new ArtistNode(foundArtist), 1 - match);
+                        similarArtistDictionary.Add(new ArtistNode(foundArtist, spotifyId), 1 - match);
                     }
                 }
             }

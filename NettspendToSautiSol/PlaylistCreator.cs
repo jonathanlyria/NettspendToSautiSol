@@ -13,12 +13,13 @@ namespace NettspendToSautiSol
         private List<string> _songs;
         private readonly string _accessToken;
         
-        public PlaylistCreator(List<ArtistNode> artists, int tracksPerArtist, bool lookForFeatures, string firstArtist, string secondArtist, string _pkceToken)
+        public PlaylistCreator(List<ArtistNode> artists, int tracksPerArtist, bool lookForFeatures, string _pkceToken)
         {
             _lookForFeatures = lookForFeatures;
             _songs = new List<string>();
             _artists = artists;
             _tracksPerArtist = tracksPerArtist;
+            _accessToken = _pkceToken;
         }
 
 
@@ -74,7 +75,7 @@ namespace NettspendToSautiSol
                 var payload = new
                 {
                     name = $"from {_artists.First().Name} to {_artists.Last().Name}",
-                    description = $"tool created by @patchmademansa, creates a playlist that transitions between" +
+                    description = $"tool created by,  creates a playlist that transitions between" +
                                   $" {_artists.First().Name} and {_artists.First().Name}.",
                     @public = true
                 };
@@ -243,22 +244,22 @@ namespace NettspendToSautiSol
                 Console.WriteLine($"Searching for songs for {artist.Name}");
                 Console.WriteLine($"Number of songs to search for: {tracksPerArtist}");
                 client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
-        
-                string query = $"q=artist:\"{artist.Name}\"&type=track&limit={tracksPerArtist + 10}"; // Fetch extra tracks to filter out songs with features
-                string url = $"https://api.spotify.com/v1/search?{query}";
+
+                string url = $"https://api.spotify.com/v1/artists/{artist.SpotifyId}/top-tracks?market=US"; // Added market parameter
                 Console.WriteLine(url);
-        
+
                 var response = client.GetAsync(url).Result;
                 if (!response.IsSuccessStatusCode)
                 {
                     Console.WriteLine("Error: " + response.StatusCode);
                     return songs;
                 }
-        
+
                 string jsonResponse = response.Content.ReadAsStringAsync().Result;
                 var document = JsonDocument.Parse(jsonResponse);
-                var topSongs = document.RootElement.GetProperty("tracks").GetProperty("items").EnumerateArray();
-        
+                var topSongs = document.RootElement.GetProperty("tracks").EnumerateArray(); // Fixed "items" to "tracks"
+
+                List<string> potentialSongs = new();
                 foreach (var song in topSongs)
                 {
                     // Check if the song has only one artist (the primary artist)
@@ -272,8 +273,6 @@ namespace NettspendToSautiSol
                         {
                             string songName = NormalizeSongName(song.GetProperty("name").GetString());
                             
-                            foreach (var track in _songs) { Console.WriteLine(track); }
-                            
                             bool isDuplicate = _songs.Any(existingSong =>
                                 existingSong.Contains($" {songName} ") || 
                                 songName.Contains($" {existingSong} ") || 
@@ -281,20 +280,22 @@ namespace NettspendToSautiSol
 
                             if (!isDuplicate)
                             {
-                                Console.WriteLine($"Adding Song {song.GetProperty("name").GetString()} for {artist.Name}");
-                                songs.Add(songId);
+                                potentialSongs.Add(songId);
                                 _songs.Add(songName);
                             }
                         }
                     }
-                    
-                    if (songs.Count >= tracksPerArtist)
-                        break;
+                }
+                if (potentialSongs.Count > 0)
+                {
+                    Random random = new Random();
+                    potentialSongs = potentialSongs.OrderBy(x => random.Next()).Take(tracksPerArtist).ToList();
+                    songs.AddRange(potentialSongs);
                 }
             }
-
             return songs;
         }
+
         
  
     }

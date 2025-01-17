@@ -7,10 +7,17 @@ namespace NettspendToSautiSol
         public ArtistNetwork(DatabaseManager databaseManager)
         {
             _databaseManager = databaseManager;
+
+        }
+        public void LoadNetwork()
+        {
+            Console.WriteLine("Loading the artist network...");
             LoadNetworkFromDatabase();
+            Console.WriteLine("Finished loading the artist network.");
         }
         private void LoadNetworkFromDatabase()
         {
+            Console.WriteLine("I am loading the artists from the database");
             // Fetch all artists from the database
             var allArtists = _databaseManager.GetAllArtists();
             foreach (var artist in allArtists)
@@ -22,7 +29,7 @@ namespace NettspendToSautiSol
             var edges = _databaseManager.GetAllConnections();
             foreach (var edge in edges)
             {
-                AddConnection(edge.Node1, edge.Node2, (1-edge.Weight)*(1-edge.Weight));
+                AddConnection(edge.Node1, edge.Node2, (1-edge.Weight));
             }
         }
 

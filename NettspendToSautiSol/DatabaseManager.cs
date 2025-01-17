@@ -54,25 +54,6 @@ public class DatabaseManager
     }
     
     // Retrieve artists by name (case-insensitive)
-    public string GetArtistId(string artistName)
-    {
-        using (var connection = new SqliteConnection(_connectionString))
-        {
-            connection.Open();
-
-            string selectQuery = "SELECT ArtistName FROM Artist WHERE ArtistName = @artistName;";
-            using (var cmd = new SqliteCommand(selectQuery, connection))
-            {
-                cmd.Parameters.AddWithValue("@artistName", artistName);
-                using (var reader = cmd.ExecuteReader())
-                {
-                    string spotifyId = reader.GetString(2);
-                    return spotifyId;
-                }
-            }
-      
-        }
-    }
 
     public bool DoesArtistExist(string artistName)
     {
@@ -173,7 +154,7 @@ public class DatabaseManager
        {
            connection.Open();
    
-           string selectQuery = "SELECT ArtistName, LastExpanded FROM Artist ORDER BY LastExpanded DESC;";
+           string selectQuery = "SELECT ArtistName, SpotifyId, LastExpanded FROM Artist ORDER BY LastExpanded DESC;";
            using (var cmd = new SqliteCommand(selectQuery, connection))
            {
                using (var reader = cmd.ExecuteReader())
@@ -181,7 +162,8 @@ public class DatabaseManager
                    while (reader.Read())
                    {
                        string artistName = reader.GetString(0);
-                       artists.Add(new ArtistNode(artistName));
+                       string spotifyId = reader.GetString(1);
+                       artists.Add(new ArtistNode(artistName, spotifyId));
                    }
                }
            }
@@ -220,7 +202,7 @@ public class DatabaseManager
             connection.Open();
 
             string selectQuery = @"
-            SELECT ArtistName
+            SELECT ArtistName, SpotifyId
             FROM Artist
             WHERE LOWER(ArtistName) != LOWER(@artistName)
             OR LOWER(ArtistName) LIKE LOWER(@artistName) || ' %'
@@ -234,13 +216,64 @@ public class DatabaseManager
                 {
                     while (reader.Read())
                     {
-                        var name = reader["ArtistName"] as string;
-                        artists.Add(new ArtistNode(name));
+                        var name = reader.GetString(0);
+                        var spotifyId = reader.GetString(1);
+                        artists.Add(new ArtistNode(name, spotifyId));
                     }
                 }
             }
         }
         return artists;
+    }
+
+    public string GetIdFromName(string artistName)
+    {
+        string spotifyId = "";
+
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+
+            string selectQuery = @"SELECT SpotifyId FROM Artist WHERE ArtistName = @artistName COLLATE NOCASE";
+            using (var cmd = new SqliteCommand(selectQuery, connection))
+            {
+                cmd.Parameters.AddWithValue("@artistName", artistName);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        spotifyId = reader.GetString(0);
+                    }
+                  
+                }
+            }
+        }
+        return spotifyId;
+    }
+
+    public string GetNameFromId(string spotifyId)
+    {
+        string name = "";
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+
+            string selectQuery = @"SELECT ArtistName FROM Artist WHERE SpotifyId = @spotifyId COLLATE NOCASE";
+            using (var cmd = new SqliteCommand(selectQuery, connection))
+            {
+                cmd.Parameters.AddWithValue("@spotifyId", spotifyId);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        name = reader.GetString(0);
+                    }
+                  
+                }
+            }
+        }
+        return name;
+
     }
    
    // Retrieve all connections from the database
@@ -254,7 +287,7 @@ public class DatabaseManager
    
            string selectQuery = @"
                SELECT ArtistName1, ArtistName2, ConnectionStrength
-               FROM Connections;";
+               FROM Connections";
            using (var cmd = new SqliteCommand(selectQuery, connection))
            {
                using (var reader = cmd.ExecuteReader())
@@ -262,14 +295,14 @@ public class DatabaseManager
                    while (reader.Read())
                    {
                        string artistName1 = reader.GetString(0);
+                       string artistId1 = GetIdFromName(artistName1);
                        string artistName2 = reader.GetString(1);
+                       string artistId2 = GetIdFromName(artistName2);
                        double strength = reader.GetDouble(2);
-                     
-   
                        // Fetch ArtistNodes from database to create ArtistEdge
-                       ArtistNode artist1 = new ArtistNode(artistName1);
-                       ArtistNode artist2 = new ArtistNode(artistName2);
-                      
+                       ArtistNode artist1 = new ArtistNode(artistName1, artistId1);
+                       ArtistNode artist2 = new ArtistNode(artistName2, artistId2);
+                       
                        connections.Add(new ArtistEdge(artist1, artist2, strength));
             
                    }
@@ -295,7 +328,8 @@ public class DatabaseManager
                     WHEN A.LastExpanded IS NULL THEN 2 - IFNULL(C.ConnectionStrength, 0)
                     ELSE 1 - IFNULL(C.ConnectionStrength, 0)
                 END AS Priority,
-                A.LastExpanded
+                A.LastExpanded,
+                A.SpotifyId
             FROM 
                 Artist A
             LEFT JOIN 
@@ -322,7 +356,8 @@ public class DatabaseManager
                    {
                        string artistName = reader.GetString(0);
                        double priority = reader.GetDouble(1);
-                       queue.Enqueue(new ArtistNode(artistName), priority);
+                       string spotifyId = reader.GetString(3);
+                       queue.Enqueue(new ArtistNode(artistName, spotifyId), priority);
                    }
                }
            }
