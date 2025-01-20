@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.IO;
 
 namespace NettspendToSautiSol
 {
@@ -8,11 +10,13 @@ namespace NettspendToSautiSol
     {
         public static async Task Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
-
             var databasePath =
-                "/Users/jonathan/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/NettspendToSautiSol.db";
-            DatabaseManager database = new(databasePath);
+             @"C:\Users\jl154125\Source\Repos\jonathanlyria\NettspendToSautiSol\NettspendToSautiSol\database.db";
+            DatabaseManager databaseManager = new DatabaseManager(databasePath);
+            //    ArtistExpander expand = new ArtistExpander(databaseManager);
+
+
+            var builder = WebApplication.CreateBuilder();
 
             // Register services
             builder.Services.AddControllers();
@@ -39,6 +43,8 @@ namespace NettspendToSautiSol
             app.MapControllers();
 
             await app.RunAsync();
+
         }
+
     }
 }

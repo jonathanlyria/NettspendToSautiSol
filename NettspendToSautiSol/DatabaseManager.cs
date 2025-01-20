@@ -29,7 +29,8 @@ public class DatabaseManager
                 CREATE TABLE IF NOT EXISTS Artist (
                     ArtistName TEXT NOT NULL PRIMARY KEY,
                     SpotifyID TEXT NOT NULL,
-                    LastExpanded TEXT NULL                                   
+                    Expanded BIT NOT NULL, 
+                    Priority REAL NOT NULL
                 );";
             using (var cmd = new SqliteCommand(createArtistTableQuery, connection))
             {
@@ -52,7 +53,7 @@ public class DatabaseManager
 
         Console.WriteLine("Database initialized: Tables 'Artist' and 'Connections' created.");
     }
-    
+
     // Retrieve artists by name (case-insensitive)
 
     public bool DoesArtistExist(string artistName)
@@ -60,7 +61,7 @@ public class DatabaseManager
         using var connection = new SqliteConnection(_connectionString);
         {
             connection.Open();
-            
+
             string selectQuery = "SELECT ArtistName FROM Artist WHERE LOWER(ArtistName) = LOWER(@artistName);";
             using (var cmd = new SqliteCommand(selectQuery, connection))
             {
@@ -76,18 +77,18 @@ public class DatabaseManager
             }
         }
     }
-    
+
     public bool DoesConnectionExist(string artistName1, string artistName2)
     {
         using var connection = new SqliteConnection(_connectionString);
         {
             connection.Open();
-            
+
             string selectQuery = @"
                 SELECT * FROM Connections
                 WHERE (ArtistName1 = @artistName1 AND ArtistName2 = @artistName2)
                 OR (ArtistName1 = @artistName2 AND ArtistName2 = @artistName1);";
-            
+
             using (var cmd = new SqliteCommand(selectQuery, connection))
             {
                 cmd.Parameters.AddWithValue("@artistName1", artistName1);
@@ -100,84 +101,59 @@ public class DatabaseManager
                     }
                     return false;
                 }
-               
+
             }
         }
     }
 
-    public void UpdateLastExpanded(string artistName, string lastExpanded)
+    public void UpdateExpanded(string spotifyId)
     {
         using var connection = new SqliteConnection(_connectionString);
         {
             connection.Open();
-        
-            string updateQuery = "UPDATE Artist SET LastExpanded = @lastExpanded WHERE ArtistName = @artistName;";
+
+            string updateQuery = "UPDATE Artist SET Expanded = 1 WHERE SpotifyId = @spotifyId;";
             using (var cmd = new SqliteCommand(updateQuery, connection))
             {
-                cmd.Parameters.AddWithValue("@artistName", artistName);
-                cmd.Parameters.AddWithValue("@lastExpanded", lastExpanded);
-            
+                cmd.Parameters.AddWithValue("@spotifyId", spotifyId);
                 cmd.ExecuteNonQuery();
             }
         }
     }
 
 
-    public void UpdateConnectionStrength(string artistName1, string artistName2, double strength)
-    {
-        using var connection = new SqliteConnection(_connectionString);
-        {
-            connection.Open();
-            
-            string updateQuery = @"
-                UPDATE Connections
-                SET ConnectionStrength = @strength
-                WHERE (ArtistName1 = @artistName1 AND ArtistName2 = @artistName2)
-                OR (ArtistName1 = @artistName2 AND ArtistName2 = @artistName1);";
-            using (var cmd = new SqliteCommand(updateQuery, connection))
-            {
-                cmd.Parameters.AddWithValue("@artistName1", artistName1);
-                cmd.Parameters.AddWithValue("@artistName2", artistName2);
-                cmd.Parameters.AddWithValue("@strength", strength);
-            
-                cmd.ExecuteNonQuery();
-            }
-        }
-    }
-
-    
     public List<ArtistNode> GetAllArtists()
-   {
-       var artists = new List<ArtistNode>();
-   
-       using (var connection = new SqliteConnection(_connectionString))
-       {
-           connection.Open();
-   
-           string selectQuery = "SELECT ArtistName, SpotifyId, LastExpanded FROM Artist ORDER BY LastExpanded DESC;";
-           using (var cmd = new SqliteCommand(selectQuery, connection))
-           {
-               using (var reader = cmd.ExecuteReader())
-               {
-                   while (reader.Read())
-                   {
-                       string artistName = reader.GetString(0);
-                       string spotifyId = reader.GetString(1);
-                       artists.Add(new ArtistNode(artistName, spotifyId));
-                   }
-               }
-           }
-       }
-   
-       return artists;
-   }
+    {
+        var artists = new List<ArtistNode>();
+
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+
+            string selectQuery = "SELECT ArtistName, SpotifyId, Expanded FROM Artist;";
+            using (var cmd = new SqliteCommand(selectQuery, connection))
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string artistName = reader.GetString(0);
+                        string spotifyId = reader.GetString(1);
+                        artists.Add(new ArtistNode(artistName, spotifyId));
+                    }
+                }
+            }
+        }
+
+        return artists;
+    }
 
     public bool DoesIdExist(string id)
     {
         using (var connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
-            
+
             string selectQuery = "SELECT SpotifyID FROM Artist WHERE SpotifyID = @id;";
             using (var cmd = new SqliteCommand(selectQuery, connection))
             {
@@ -244,7 +220,7 @@ public class DatabaseManager
                     {
                         spotifyId = reader.GetString(0);
                     }
-                  
+
                 }
             }
         }
@@ -268,115 +244,91 @@ public class DatabaseManager
                     {
                         name = reader.GetString(0);
                     }
-                  
+
                 }
             }
         }
         return name;
 
     }
-   
-   // Retrieve all connections from the database
-   public List<ArtistEdge> GetAllConnections()
-   {
-       var connections = new List<ArtistEdge>();
-   
-       using (var connection = new SqliteConnection(_connectionString))
-       {
-           connection.Open();
-   
-           string selectQuery = @"
+
+    // Retrieve all connections from the database
+    public List<ArtistEdge> GetAllConnections()
+    {
+        var connections = new List<ArtistEdge>();
+
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+
+            string selectQuery = @"
                SELECT ArtistName1, ArtistName2, ConnectionStrength
                FROM Connections";
-           using (var cmd = new SqliteCommand(selectQuery, connection))
-           {
-               using (var reader = cmd.ExecuteReader())
-               {
-                   while (reader.Read())
-                   {
-                       string artistName1 = reader.GetString(0);
-                       string artistId1 = GetIdFromName(artistName1);
-                       string artistName2 = reader.GetString(1);
-                       string artistId2 = GetIdFromName(artistName2);
-                       double strength = reader.GetDouble(2);
-                       // Fetch ArtistNodes from database to create ArtistEdge
-                       ArtistNode artist1 = new ArtistNode(artistName1, artistId1);
-                       ArtistNode artist2 = new ArtistNode(artistName2, artistId2);
-                       
-                       connections.Add(new ArtistEdge(artist1, artist2, strength));
-            
-                   }
-               }
-           }
-       }
-   
-       return connections;
-   }
+            using (var cmd = new SqliteCommand(selectQuery, connection))
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string artistName1 = reader.GetString(0);
+                        string artistId1 = GetIdFromName(artistName1);
+                        string artistName2 = reader.GetString(1);
+                        string artistId2 = GetIdFromName(artistName2);
+                        double strength = reader.GetDouble(2);
+                        // Fetch ArtistNodes from database to create ArtistEdge
+                        ArtistNode artist1 = new ArtistNode(artistName1, artistId1);
+                        ArtistNode artist2 = new ArtistNode(artistName2, artistId2);
 
-   public PriorityQueue<ArtistNode, double>? GetExpanderQueue()
-   {
-       var queue = new PriorityQueue<ArtistNode, double>();
-       using (var connection = new SqliteConnection(_connectionString))
-       {
-           connection.Open();
+                        connections.Add(new ArtistEdge(artist1, artist2, strength));
 
-           // Prioritize nulls first, then order by LastExpanded DESC
-           string selectQuery = @"
-            SELECT 
-                A.ArtistName,
-                CASE 
-                    WHEN A.LastExpanded IS NULL THEN 2 - IFNULL(C.ConnectionStrength, 0)
-                    ELSE 1 - IFNULL(C.ConnectionStrength, 0)
-                END AS Priority,
-                A.LastExpanded,
-                A.SpotifyId
-            FROM 
-                Artist A
-            LEFT JOIN 
-                Connections C 
-            ON 
-                A.ArtistName = C.ArtistName1
-                AND C.ConnectionID = (
-                    SELECT ConnectionID 
-                    FROM Connections 
-                    WHERE ArtistName1 = A.ArtistName 
-                    ORDER BY ConnectionID DESC 
-                    LIMIT 1
-                )
-            ORDER BY 
-                Priority DESC,
-                A.LastExpanded ASC;";
-                
-           using (var cmd = new SqliteCommand(selectQuery, connection))
-           {
-               using (var reader = cmd.ExecuteReader())
-               {
-                   if (!reader.HasRows) return null;
-                   while (reader.Read())
-                   {
-                       string artistName = reader.GetString(0);
-                       double priority = reader.GetDouble(1);
-                       string spotifyId = reader.GetString(3);
-                       queue.Enqueue(new ArtistNode(artistName, spotifyId), priority);
-                   }
-               }
-           }
-       }
-       return queue;
-   }
+                    }
+                }
+            }
+        }
 
-    public void AddArtist(string artistName, string spotifyId, string? lastExpanded = null)
+        return connections;
+    }
+
+    public PriorityQueue<ArtistNode, double>? GetExpanderQueue()
+    {
+        var queue = new PriorityQueue<ArtistNode, double>();
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+
+            string selectQuery = @"
+           SELECT ArtistName, SpotifyID, Priority FROM Artist WHERE Expanded = 0";
+
+            using (var cmd = new SqliteCommand(selectQuery, connection))
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (!reader.HasRows) return null;
+                    while (reader.Read())
+                    {
+                        string artistName = reader.GetString(0);
+                        string spotifyId = reader.GetString(1);
+                        double priority = reader.GetDouble(2);
+                        queue.Enqueue(new ArtistNode(artistName, spotifyId), priority);
+                    }
+                }
+            }
+        }
+        return queue;
+    }
+
+    public void AddArtist(string artistName, string spotifyId, double priority)
     {
         using (var connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
 
-            string insertQuery = "INSERT INTO Artist (ArtistName, LastExpanded, SpotifyID) VALUES (@artistName, @lastExpanded, @spotifyId);";
+            string insertQuery = "INSERT INTO Artist (ArtistName, Expanded, SpotifyID, Priority) VALUES (@artistName, 0, @spotifyId, @priority);";
             using (var cmd = new SqliteCommand(insertQuery, connection))
             {
                 cmd.Parameters.AddWithValue("@artistName", artistName);
-                cmd.Parameters.AddWithValue("@lastExpanded", (object?)lastExpanded ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@spotifyId", spotifyId);
+                cmd.Parameters.AddWithValue("@priority", priority);
                 cmd.ExecuteNonQuery();
             }
         }
@@ -402,8 +354,8 @@ public class DatabaseManager
         }
     }
 
-   
-   
+
+
     public void PrintDatabaseToTerminal()
     {
         using (var connection = new SqliteConnection(_connectionString))
@@ -432,8 +384,8 @@ public class DatabaseManager
                 while (reader.Read())
                 {
                     int connectionId = reader.GetInt32(0); // ConnectionID
-                    string artistName1 = reader.GetString(1); 
-                    string artistName2 = reader.GetString(2); 
+                    string artistName1 = reader.GetString(1);
+                    string artistName2 = reader.GetString(2);
                     double strength = reader.GetDouble(3); // ConnectionStrength
                     Console.WriteLine($"ConnectionID: {connectionId}, Artist1: {artistName1}, Artist2: {artistName2}, Strength: {strength}");
                 }
@@ -441,7 +393,7 @@ public class DatabaseManager
         }
     }
 
-   
-       
-     
+
+
+
 }

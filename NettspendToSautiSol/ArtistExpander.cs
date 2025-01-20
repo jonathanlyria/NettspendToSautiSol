@@ -16,22 +16,32 @@ namespace NettspendToSautiSol
         private string _apiKey; // API key
         private int _wastedCalls;
         private int _totalCalls;
+        private int _numberOfArtists;
         public string DebugLine;
-        private PriorityQueue<ArtistNode, double> Queue;
+        private PriorityQueue<ArtistNode, double>? Queue;
 
-        public ArtistExpander(string apiKey, DatabaseManager databaseManager)
+        public ArtistExpander(DatabaseManager databaseManager)
         {
-            _apiKey = apiKey;
+            _apiKey = "00751a650c0182344603b9252c66d416";
             _databaseManager = databaseManager;
             _wastedCalls = 0;
             _totalCalls = 0;
 
-           // Queue = _databaseManager.GetExpanderQueue();
-           Queue = new PriorityQueue<ArtistNode, double>();
+            // Queue = _databaseManager.GetExpanderQueue();
+            Queue = new PriorityQueue<ArtistNode, double>();
+
+            if (_databaseManager.GetExpanderQueue() == null)
+            {
+                Queue.Enqueue(new("Drake", "3TVXtAsR1Inumwj472S9r4"), 0);
+
+            }
+            else
+            {
+                Queue = _databaseManager.GetExpanderQueue();
+            }
 
             _accessToken = _spotifyClientCredentials.GetAccessTokenAsync().Result.AccessToken;
             _tokenExpiryTime = DateTime.UtcNow.AddSeconds(_spotifyClientCredentials.GetAccessTokenAsync().Result.ExpiresIn);
-
             Expand();
         }
 
@@ -40,7 +50,7 @@ namespace NettspendToSautiSol
             HashSet<ArtistNode> visited = new HashSet<ArtistNode>();
             int callCount = 0;
             int level = 0;
-            
+
 
             while (true)
             {
@@ -58,22 +68,23 @@ namespace NettspendToSautiSol
                 {
 
                     ArtistNode currentNode = Queue.Dequeue();
-                    var connections = GetConnections(currentNode);
+                    _databaseManager.UpdateExpanded(currentNode.Identifier);
+                    var similarArtists = GetSimilarArtists(currentNode);
 
                     callCount++;
                     Console.WriteLine($"{callCount} API calls made");
 
-                    foreach (var connection in connections)
+                    foreach (var similarArtist in similarArtists)
                     {
-                        Console.WriteLine($"Comparing {connection.Key.Name} to Nettspend");
-                            if (connection.Key.Name == "Nettspend")
+                        Console.WriteLine($"Comparing {similarArtist.Key.Name} to Nettspend");
+                        if (similarArtist.Key.Name == "Nettspend")
                         {
                             return;
                         }
-                        if (!visited.Contains(connection.Key))
+                        if (!visited.Contains(similarArtist.Key))
                         {
-                            Queue.Enqueue(connection.Key, connection.Value);
-                            visited.Add(connection.Key);
+                            Queue.Enqueue(similarArtist.Key, similarArtist.Value);
+                            visited.Add(similarArtist.Key);
                         }
                     }
                 }
@@ -101,7 +112,7 @@ namespace NettspendToSautiSol
             }
         }
 
-        private Dictionary<ArtistNode, double> GetConnections(ArtistNode startingArtistNode)
+        private Dictionary<ArtistNode, double> GetSimilarArtists(ArtistNode startingArtistNode)
         {
             RefreshAccessToken().Wait();
             Dictionary<ArtistNode, double> similarArtistDictionary = new Dictionary<ArtistNode, double>();
@@ -115,7 +126,7 @@ namespace NettspendToSautiSol
                     { "artist", startingArtistNode.Name },
                     { "api_key", _apiKey },
                     { "format", "json" },
-                    { "limit", "20"}
+                    { "limit", "10"}
                 };
 
                 var response = client.GetAsync(BuildUrlWithParams(url, parameters)).Result;
@@ -125,7 +136,6 @@ namespace NettspendToSautiSol
                     string responseContent = response.Content.ReadAsStringAsync().Result;
                     if (string.IsNullOrWhiteSpace(responseContent)) return similarArtistDictionary;
 
-                    _databaseManager.UpdateLastExpanded(startingArtistNode.Name, DateTime.UtcNow.ToString());
                     JsonDocument document = JsonDocument.Parse(responseContent);
 
                     if (!IsDataValid(document)) return similarArtistDictionary;
@@ -175,21 +185,26 @@ namespace NettspendToSautiSol
                         if (_databaseManager.DoesIdExist(spotifyId))
                         {
                             _databaseManager.AddConnection(startingArtistNode.Name, foundArtist, match);
-                            _wastedCalls++;
                             Console.ForegroundColor = ConsoleColor.Yellow;
                             Console.WriteLine($"Adding new connection between {startingArtistNode.Name} and {foundArtist} as the Spotify ID exists in database");
                             Console.WriteLine($"Total calls: {_totalCalls++}");
                             Console.ResetColor();
                             continue;
                         }
-                        
-                        _databaseManager.AddArtist(foundArtist, spotifyId);
+
+                        double priority = 1 - match + Convert.ToDouble(popularity) / 100;
+
+                        _databaseManager.AddArtist(foundArtist, spotifyId, priority);
                         _databaseManager.AddConnection(startingArtistNode.Name, foundArtist, match);
+
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine($"Added {foundArtist} to the database and added a new connection between {startingArtistNode.Name} and {foundArtist}");
                         Console.WriteLine($"Total calls: {_totalCalls++}");
+                        Console.WriteLine($"Total artists: {_numberOfArtists++}");
+                        Console.WriteLine($"Priroity: {priority}");
                         Console.ResetColor();
-                        similarArtistDictionary.Add(new ArtistNode(foundArtist, spotifyId), 1 - match);
+
+                        similarArtistDictionary.Add(new ArtistNode(foundArtist, spotifyId), priority);
                     }
                 }
             }
@@ -204,8 +219,8 @@ namespace NettspendToSautiSol
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 int randomTime = random.Next(60000, 200000);
-                
-                Console.WriteLine($"Rate limit exceeded. Waiting {randomTime/1000} seconds before retrying...");
+
+                Console.WriteLine($"Rate limit exceeded. Waiting {randomTime / 1000} seconds before retrying...");
                 Console.ResetColor();
                 Task.Delay(randomTime).Wait();
                 return false;
@@ -259,7 +274,7 @@ namespace NettspendToSautiSol
                     while (RateLimitHandler(response) == false)
                     {
                         response = client.GetAsync(url).Result;
-                        
+
                     }
                     Console.WriteLine(response.StatusCode);
                     if (response.IsSuccessStatusCode)
