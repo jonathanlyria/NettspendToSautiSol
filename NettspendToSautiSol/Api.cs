@@ -125,5 +125,63 @@ namespace NettspendToSautiSol
                 return StatusCode(500, new { Error = "An error occurred while checking the artist." });
             }
         }
+
+        [HttpGet("report-issue")]
+        public IActionResult ReportIssue([FromQuery] string artistName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(artistName))
+                {
+                    return BadRequest("Artist name cannot be empty.");
+                }
+
+                string path = "C:\\Users\\jl154125\\Source\\Repos\\jonathanlyria\\NettspendToSautiSol\\NettspendToSautiSol\\Issues.txt";
+
+                // Create the file if it doesn't exist
+                if (!System.IO.File.Exists(path))
+                {
+                    System.IO.File.Create(path).Dispose(); // Ensure the file handle is closed
+                }
+
+                System.IO.File.AppendAllText(path, $"{artistName}{Environment.NewLine}");
+
+                return Ok($"Issue reported for artist: {artistName}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("request-artist")]
+        public IActionResult RequestArtist([FromQuery] string artistName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(artistName))
+                {
+                    return BadRequest("Artist name cannot be empty.");
+                }
+
+                string path = "C:\\Users\\jl154125\\Source\\Repos\\jonathanlyria\\NettspendToSautiSol\\NettspendToSautiSol\\RequestedArtists.txt";
+
+                // Create the file if it doesn't exist
+                if (!System.IO.File.Exists(path))
+                {
+                    System.IO.File.Create(path).Dispose(); // Ensure the file handle is closed
+                }
+
+                System.IO.File.AppendAllText(path, $"{artistName}{Environment.NewLine}");
+
+                return Ok($"Artist request received for: {artistName}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
     }
 }
