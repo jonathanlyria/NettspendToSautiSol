@@ -12,6 +12,7 @@ namespace NettspendToSautiSol
         private SpotifyAuthorizer _spotifyAuthorizer;
         private List<string> _songs;
         private readonly string _accessToken;
+        private string playlistId;
         
         public PlaylistCreator(List<ArtistNode> artists, int tracksPerArtist, bool lookForFeatures, string _pkceToken)
         {
@@ -20,6 +21,7 @@ namespace NettspendToSautiSol
             _artists = artists;
             _tracksPerArtist = tracksPerArtist;
             _accessToken = _pkceToken;
+            CreatePlaylist();
         }
 
 
@@ -60,9 +62,9 @@ namespace NettspendToSautiSol
         }
        
         
-        public string CreatePlaylist()
+        public void CreatePlaylist()
         {
-            string playlistId = "";
+
             using (HttpClient client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Authorization = 
@@ -93,13 +95,11 @@ namespace NettspendToSautiSol
                     var document = JsonDocument.Parse(jsonResponse);
                     playlistId = document.RootElement.GetProperty("id").GetString();
                     Console.WriteLine($"Playlist ID: {playlistId}");
-                    return playlistId;
                 }
                 else
                 {
                     Console.WriteLine($"Failed to create playlist. Status code: {response.StatusCode}");
                     Console.WriteLine($"Response: {response.Content.ReadAsStringAsync().Result}");
-                    return playlistId;
                 }
             }
             
@@ -108,7 +108,6 @@ namespace NettspendToSautiSol
         {
             using (HttpClient client = new HttpClient())
             {
-                string playlistId = CreatePlaylist();
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
@@ -294,6 +293,10 @@ namespace NettspendToSautiSol
                 }
             }
             return songs;
+        }
+        public string GetPlaylistLink()
+        {
+            return $"https://open.spotify.com/playlist/{playlistId}";
         }
 
         

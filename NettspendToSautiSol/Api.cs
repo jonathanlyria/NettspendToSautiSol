@@ -104,8 +104,8 @@ namespace NettspendToSautiSol
 
                 var songIds = playlistCreator.GetSongs();
                 playlistCreator.AddToPlaylist(songIds);
-
-                return Ok(new { Message = "Playlist created successfully." });
+                string playlistLink = playlistCreator.GetPlaylistLink();
+                return Ok(new { Message = "Playlist created successfully.", PlaylistLink = playlistLink});
             }
             catch (Exception ex)
             {
