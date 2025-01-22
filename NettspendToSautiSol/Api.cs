@@ -45,7 +45,8 @@ namespace NettspendToSautiSol
                 
                 return Ok(new
                 {
-                    Path = traveller.Path.Select(a => a.SpotifyId).ToList(),
+                    PathId = traveller.Path.Select(a => a.SpotifyId).ToList(),
+                    PathName = traveller.Path.Select(a => a.Name).ToList(),
                 });
             }
             catch (Exception ex)
@@ -110,7 +111,7 @@ namespace NettspendToSautiSol
             {
                 return StatusCode(500, new { Error = "An error occurred while creating the playlist.", Details = ex.Message });
             }
-        }
+        } 
 
         [HttpGet("artists-exist")]
         public IActionResult ArtistsExists([FromQuery] string artistName)

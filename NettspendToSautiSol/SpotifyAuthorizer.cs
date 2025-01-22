@@ -9,7 +9,7 @@ public class SpotifyAuthorizer
 {
     private readonly string _clientId = "c6ed8f690a15491f9deb29547c8447ff";
     private readonly string clientSecret = "34009c71d59748a09bf3867de0f8869e";
-    private readonly string _redirectUri = "http://localhost:8888/callback/";
+    private readonly string _redirectUri = "http://localhost:53882/callback/";
     private string? _accessToken;
     public string Reason;
     

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.IO;
@@ -11,11 +10,13 @@ namespace NettspendToSautiSol
         public static async Task Main(string[] args)
         {
             var databasePath =
-             @"C:\Users\jl154125\Source\Repos\jonathanlyria\NettspendToSautiSol\NettspendToSautiSol\database.db";
+               @"C:\Users\jl154125\Source\Repos\jonathanlyria\NettspendToSautiSol\NettspendToSautiSol\database.db";
             DatabaseManager databaseManager = new DatabaseManager(databasePath);
-            //    ArtistExpander expand = new ArtistExpander(databaseManager);
+
+           // ArtistExpander artistExpander = new(databaseManager);
 
 
+          
             var builder = WebApplication.CreateBuilder();
 
             // Register services
@@ -29,6 +30,17 @@ namespace NettspendToSautiSol
                 return artistNetwork;
             });
 
+            // Add CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigin", policy =>
+                {
+                    policy.WithOrigins("http://localhost:50397") // Add your front-end's URL here
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             var app = builder.Build();
 
             Console.WriteLine("Starting the application...");
@@ -39,12 +51,14 @@ namespace NettspendToSautiSol
             await Task.Run(() => artistNetwork.LoadNetwork()); // LoadNetwork must be thread-safe if called again
             Console.WriteLine("Artist network loaded!");
 
+            // Use CORS middleware first
+            app.UseCors("AllowSpecificOrigin");
+
             app.UseRouting();
+
             app.MapControllers();
 
             await app.RunAsync();
-
         }
-
     }
 }
