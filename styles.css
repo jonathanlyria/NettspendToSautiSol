@@ -1,0 +1,143 @@
+﻿/* General Styles */
+body {
+    margin: 0;
+    padding: 20px;
+    background-color: black;
+    color: white;
+    font-family: "courier-new", monospace;
+    font-size: clamp(1.5rem, 2vw, 2rem); /* Responsive font size */
+}
+
+/* Console Container */
+#console {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+}
+
+/* Output Box */
+#output {
+    width: 100%;
+    max-width: 600px;
+    min-height: 300px;
+    background: black;
+    color: white;
+    font-size: clamp(1rem, 1.5vw, 1.5rem); /* Responsive font size */
+    padding: 10px;
+    overflow-y: auto;
+    position: relative; /* For positioning child elements */
+}
+
+/* Sticky Navigation */
+#navigation {
+    position: sticky;
+    top: -10px; /* Adjust to position outside the output box */
+    right: -10px;
+    display: flex;
+    gap: 10px;
+}
+
+    #navigation a {
+        color: #1DB954; /* Green links */
+        text-decoration: none;
+        font-family: "courier-new", monospace;
+        font-size: clamp(1rem, 1.5vw, 1.5rem); /* Responsive font size */
+        padding: 5px 10px;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+        #navigation a:hover {
+            background-color: #1DB954;
+            color: black;
+        }
+
+        #navigation a:focus {
+            outline: none;
+        }
+
+/* Input Box */
+#input {
+    color: #1DB954;
+    background: black;
+    outline: none;
+    border: none;
+    font-family: "courier-new", monospace;
+    font-size: clamp(1rem, 1.5vw, 1.5rem); /* Responsive font size */
+    width: 100%;
+    max-width: 600px;
+}
+
+/* Terminal Modal */
+.terminal-modal {
+    position: fixed;
+    width: 100%;
+    max-width: 600px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: black;
+    color: white;
+    padding: 20px;
+    font-family: "courier-new", monospace;
+}
+
+.terminal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-title {
+    color: #1DB954;
+    margin: 0;
+    font-size: clamp(1.5rem, 2vw, 2rem); /* Responsive font size */
+}
+
+/* Textarea */
+textarea {
+    width: 100%;
+    background-color: black;
+    color: white;
+    padding: 10px;
+    font-family: "courier-new", monospace;
+    font-size: clamp(1rem, 1.5vw, 1.5rem); /* Responsive font size */
+    resize: none;
+}
+
+/* Buttons */
+button {
+    background: black;
+    color: #1DB954;
+    padding: 5px 10px;
+    font-size: clamp(1rem, 1.5vw, 1.5rem); /* Responsive font size */
+    cursor: pointer;
+    font-family: "courier-new", monospace;
+}
+
+    button:hover {
+        background: #1DB954;
+        color: black;
+    }
+
+/* Error and Hidden Elements */
+.error {
+    color: red;
+    font-size: clamp(1rem, 1.5vw, 1.5rem); /* Responsive font size */
+    margin-top: 5px;
+}
+
+.hidden {
+    display: none;
+}
+
+#header-title {
+    position: sticky;
+    text-align: center;
+    margin: 100px 0;
+    font-size: 2em;
+    font-family: "courier-new", monospace;
+    color: white; /* Adjust to match your theme */
+}

@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>From ____ to ____</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="console">
+        <h1 id="header-title">from</h1>
+        <div id="navigation">
+            <a href="#report" id="report-link">Report an Issue</a>
+            <a href="#requestartist" id="requestartist-link">Request an Artist</a>
+            <a href="/information" target="_blank" id="info-link">Information</a>
+            <a href="https://github.com/your-repo" target="_blank" id="github-link">GitHub</a>
+        </div>
+        <div id="output"></div>
+        <input id="input" type="text" placeholder="Type your command here..." autofocus />
+    </div>
+
+    <!-- Report Issue Modal -->
+    <div id="report-issue-modal" class="terminal-modal hidden">
+        <div class="terminal-content">
+            <h2 class="modal-title">Report an Issue</h2>
+            <textarea id="issue-text" placeholder="Describe the issue (max 500 characters)..." maxlength="500"></textarea>
+            <div id="issue-error" class="error hidden">Please provide a valid issue description.</div>
+            <button id="submit-issue">Submit</button>
+            <button class="close-modal">Close</button>
+        </div>
+    </div>
+
+    <!-- Request Artist Modal -->
+    <div id="request-artist-modal" class="terminal-modal hidden">
+        <div class="terminal-content">
+            <h2 class="modal-title">Request an Artist</h2>
+            <input id="artist-name" type="text" placeholder="Enter artist name..." />
+            <div id="artist-error" class="error hidden">Please provide a valid artist name.</div>
+            <button id="submit-artist">Submit</button>
+            <button class="close-modal">Close</button>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script src="report.js"></script>
+    <script src="requestartist.js"></script>
+</body>
+</html>

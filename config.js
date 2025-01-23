@@ -1,0 +1,1 @@
+﻿const API_BASE_URL = "http://localhost:51247/api"
