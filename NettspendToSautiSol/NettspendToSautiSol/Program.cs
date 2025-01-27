@@ -35,7 +35,7 @@ namespace NettspendToSautiSol
             {
                 options.AddPolicy("AllowSpecificOrigin", policy =>
                 {
-                    policy.WithOrigins("https://jonathanlyria.github.io/NettspendToSautiSol/") // Add your front-end's URL here
+                    policy.WithOrigins("http://localhost:50397/") // Add your front-end's URL here
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });

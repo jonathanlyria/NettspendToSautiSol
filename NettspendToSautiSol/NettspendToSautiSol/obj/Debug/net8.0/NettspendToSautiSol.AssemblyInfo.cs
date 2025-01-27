@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NettspendToSautiSol")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dbde357d6134ac1b45315935630e774457e2ef50")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3f1ab95ce9ac23c52a2ce89d36e6de23fae55ff7")]
 [assembly: System.Reflection.AssemblyProductAttribute("NettspendToSautiSol")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NettspendToSautiSol")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
