@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("expander")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ad58b068e3e1019d23ed80cbc0fb5777ea985257")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c3a7fa6ecd658644b980b8d61d12a847e84691cc")]
 [assembly: System.Reflection.AssemblyProductAttribute("expander")]
 [assembly: System.Reflection.AssemblyTitleAttribute("expander")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
