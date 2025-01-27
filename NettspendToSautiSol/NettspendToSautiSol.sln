@@ -1,6 +1,34 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NettspendToSautiSol", "NettspendToSautiSol\NettspendToSautiSol.csproj", "{A0EE1A3F-A17F-4A80-8527-4A9D34636492}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.34928.147
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "webserver", "..\webserver\webserver\webserver.csproj", "{8BE505EC-D1D8-4724-A10C-DF46AA512F71}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "expander", "..\expander\expander\expander.csproj", "{BB0B6675-6A1C-499A-9D4B-B226E004F989}"
+EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "webterminal", "..\webterminal\webterminal\", "{A1B46C7E-016B-41D1-AB0F-BD18B0D69C37}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.7.2"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_52961"
+		Debug.AspNetCompiler.PhysicalPath = "..\webterminal\webterminal\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_52961\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_52961"
+		Release.AspNetCompiler.PhysicalPath = "..\webterminal\webterminal\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_52961\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "52961"
+		SlnRelativePath = "..\webterminal\webterminal\"
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibrary", "..\ClassLibrary\ClassLibrary\ClassLibrary.csproj", "{5CE8C5B3-6359-4F00-A0CE-743A70A5786A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +36,31 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A0EE1A3F-A17F-4A80-8527-4A9D34636492}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A0EE1A3F-A17F-4A80-8527-4A9D34636492}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A0EE1A3F-A17F-4A80-8527-4A9D34636492}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A0EE1A3F-A17F-4A80-8527-4A9D34636492}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BE505EC-D1D8-4724-A10C-DF46AA512F71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BE505EC-D1D8-4724-A10C-DF46AA512F71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BE505EC-D1D8-4724-A10C-DF46AA512F71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BE505EC-D1D8-4724-A10C-DF46AA512F71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB0B6675-6A1C-499A-9D4B-B226E004F989}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB0B6675-6A1C-499A-9D4B-B226E004F989}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB0B6675-6A1C-499A-9D4B-B226E004F989}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB0B6675-6A1C-499A-9D4B-B226E004F989}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B46C7E-016B-41D1-AB0F-BD18B0D69C37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B46C7E-016B-41D1-AB0F-BD18B0D69C37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B46C7E-016B-41D1-AB0F-BD18B0D69C37}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B46C7E-016B-41D1-AB0F-BD18B0D69C37}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{5CE8C5B3-6359-4F00-A0CE-743A70A5786A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CE8C5B3-6359-4F00-A0CE-743A70A5786A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CE8C5B3-6359-4F00-A0CE-743A70A5786A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CE8C5B3-6359-4F00-A0CE-743A70A5786A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2102F14A-BA0A-423C-9FF0-7799CDB2783B}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\SharedClasses\SharedClasses\SharedClasses.projitems*{8be505ec-d1d8-4724-a10c-df46aa512f71}*SharedItemsImports = 5
+		..\SharedClasses\SharedClasses\SharedClasses.projitems*{bb0b6675-6a1c-499a-9d4b-b226e004f989}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
