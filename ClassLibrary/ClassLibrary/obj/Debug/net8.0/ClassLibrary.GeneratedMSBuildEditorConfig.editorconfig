@@ -8,6 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = ClassLibrary
-build_property.ProjectDir = C:\Users\jl154125\Source\Repos\jonathanlyria\NettspendToSautiSol\ClassLibrary\ClassLibrary\
+build_property.ProjectDir = C:\Users\jl154125\source\repos\jonathanlyria\NettspendToSautiSol\ClassLibrary\ClassLibrary\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
