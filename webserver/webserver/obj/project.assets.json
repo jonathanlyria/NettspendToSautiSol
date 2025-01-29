@@ -759,40 +759,32 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\jl154125\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "/Users/jonathanlyria/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\jl154125\\Source\\Repos\\jonathanlyria\\NettspendToSautiSol\\webserver\\webserver\\webserver.csproj",
+      "projectUniqueName": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/webserver/webserver/webserver.csproj",
       "projectName": "webserver",
-      "projectPath": "C:\\Users\\jl154125\\Source\\Repos\\jonathanlyria\\NettspendToSautiSol\\webserver\\webserver\\webserver.csproj",
-      "packagesPath": "C:\\Users\\jl154125\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\jl154125\\Source\\Repos\\jonathanlyria\\NettspendToSautiSol\\webserver\\webserver\\obj\\",
+      "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/webserver/webserver/webserver.csproj",
+      "packagesPath": "/Users/jonathanlyria/.nuget/packages/",
+      "outputPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/webserver/webserver/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\jl154125\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/Users/jonathanlyria/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\jl154125\\Source\\Repos\\jonathanlyria\\NettspendToSautiSol\\ClassLibrary\\ClassLibrary\\ClassLibrary.csproj": {
-              "projectPath": "C:\\Users\\jl154125\\Source\\Repos\\jonathanlyria\\NettspendToSautiSol\\ClassLibrary\\ClassLibrary\\ClassLibrary.csproj"
+            "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/ClassLibrary/ClassLibrary/ClassLibrary.csproj": {
+              "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/ClassLibrary/ClassLibrary/ClassLibrary.csproj"
             }
           }
         }
@@ -836,7 +828,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/Users/jonathanlyria/.dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
