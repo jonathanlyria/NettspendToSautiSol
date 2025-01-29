@@ -35,11 +35,12 @@ namespace NettspendToSautiSol
             {
                 options.AddPolicy("AllowSpecificOrigin", policy =>
                 {
-                    policy.WithOrigins("http://localhost:50397/") // Add your front-end's URL here
-                          .AllowAnyHeader()
-                          .AllowAnyMethod();
+                    policy.WithOrigins("http://localhost", "http://127.0.0.1:8080") // Allow frontend URL
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
                 });
             });
+
 
             var app = builder.Build();
 

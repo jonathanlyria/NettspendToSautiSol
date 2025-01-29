@@ -223,7 +223,10 @@
           "Microsoft.Data.Sqlite": "8.0.12"
         },
         "runtime": {
-          "ClassLibrary.dll": {}
+          "ClassLibrary.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       }
     }

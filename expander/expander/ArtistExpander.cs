@@ -32,7 +32,7 @@ namespace NettspendToSautiSol
 
             if (_databaseManager.GetExpanderQueue() == null)
             {
-                Queue.Enqueue(new("Drake", "3TVXtAsR1Inumwj472S9r4"), 0);
+                Queue.Enqueue(new("YT", "0YsYhESxyHC1kuMm9Mbm3C"), 0);
 
             }
             else
@@ -192,7 +192,7 @@ namespace NettspendToSautiSol
                             continue;
                         }
 
-                        double priority = 1 - match + Convert.ToDouble(popularity) / 100;
+                        double priority = 1;
 
                         _databaseManager.AddArtist(foundArtist, spotifyId, priority);
                         _databaseManager.AddConnection(startingArtistNode.Name, foundArtist, match);
