@@ -4,8 +4,8 @@ body {
     padding: 20px;
     background-color: black;
     color: white;
-    font-family: "courier-new", monospace;
-    font-size: clamp(1.5rem, 2vw, 2rem); /* Responsive font size */
+    font-family: "Montserrat", monospace;
+    font-size: clamp(1.5rem, 2vw, 2rem);
 }
 
 /* Console Container */
@@ -25,49 +25,52 @@ body {
     min-height: 300px;
     background: black;
     color: white;
-    font-size: clamp(1rem, 1.5vw, 1.5rem); /* Responsive font size */
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
     padding: 10px;
     overflow-y: auto;
-    position: relative; /* For positioning child elements */
+    position: relative;
+    border: 1px solid black; /* Invisible border */
 }
 
 /* Sticky Navigation */
 #navigation {
     position: sticky;
-    top: -10px; /* Adjust to position outside the output box */
+    top: -10px;
     right: -10px;
     display: flex;
     gap: 10px;
 }
 
-    #navigation a {
-        color: #1DB954; /* Green links */
-        text-decoration: none;
-        font-family: "courier-new", monospace;
-        font-size: clamp(1rem, 1.5vw, 1.5rem); /* Responsive font size */
-        padding: 5px 10px;
-        transition: background-color 0.3s, color 0.3s;
-    }
+#navigation a {
+    color: #1DB954;
+    text-decoration: none;
+    font-family: "Montserrat", monospace;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    padding: 5px 10px;
+    transition: background-color 0.3s, color 0.3s;
+    border: 1px solid black; /* Invisible border */
+}
 
-        #navigation a:hover {
-            background-color: #1DB954;
-            color: black;
-        }
+#navigation a:hover {
+    background-color: #1DB954;
+    color: black;
+}
 
-        #navigation a:focus {
-            outline: none;
-        }
+#navigation a:focus {
+    outline: none;
+}
 
 /* Input Box */
-#input {
+#input, #artist-name {
     color: #1DB954;
     background: black;
     outline: none;
-    border: none;
-    font-family: "courier-new", monospace;
-    font-size: clamp(1rem, 1.5vw, 1.5rem); /* Responsive font size */
     width: 100%;
     max-width: 600px;
+    font-family: "Montserrat", monospace;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    border: 1px solid black; /* Invisible border */
+    padding: 10px;
 }
 
 /* Terminal Modal */
@@ -81,7 +84,8 @@ body {
     background-color: black;
     color: white;
     padding: 20px;
-    font-family: "courier-new", monospace;
+    font-family: "Montserrat", monospace;
+    border: 1px solid #1DB954; 
 }
 
 .terminal-content {
@@ -93,7 +97,7 @@ body {
 .modal-title {
     color: #1DB954;
     margin: 0;
-    font-size: clamp(1.5rem, 2vw, 2rem); /* Responsive font size */
+    font-size: clamp(1.5rem, 2vw, 2rem);
 }
 
 /* Textarea */
@@ -102,9 +106,10 @@ textarea {
     background-color: black;
     color: white;
     padding: 10px;
-    font-family: "courier-new", monospace;
-    font-size: clamp(1rem, 1.5vw, 1.5rem); /* Responsive font size */
+    font-family: "Montserrat", monospace;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
     resize: none;
+    border: 1px solid black; /* Invisible border */
 }
 
 /* Buttons */
@@ -112,20 +117,21 @@ button {
     background: black;
     color: #1DB954;
     padding: 5px 10px;
-    font-size: clamp(1rem, 1.5vw, 1.5rem); /* Responsive font size */
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
     cursor: pointer;
-    font-family: "courier-new", monospace;
+    font-family: "Montserrat", monospace;
+    border: 1px solid black; /* Invisible border */
 }
 
-    button:hover {
-        background: #1DB954;
-        color: black;
-    }
+button:hover {
+    background: #1DB954;
+    color: black;
+}
 
 /* Error and Hidden Elements */
 .error {
     color: red;
-    font-size: clamp(1rem, 1.5vw, 1.5rem); /* Responsive font size */
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
     margin-top: 5px;
 }
 
@@ -138,6 +144,22 @@ button {
     text-align: center;
     margin: 100px 0;
     font-size: 2em;
-    font-family: "courier-new", monospace;
-    color: white; /* Adjust to match your theme */
+    font-family: "Montserrat", monospace;
+    color: white;
+    border: 1px solid black; /* Invisible border */
+}
+
+/* Request Artist & Report Issue */
+.request-artist, .report-issue {
+    font-family: "Montserrat", monospace;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    padding: 5px 10px;
+    background: black;
+    color: #1DB954;
+    border: 1px solid black; /* Invisible border */
+}
+
+.request-artist:hover, .report-issue:hover {
+    background: #1DB954;
+    color: black;
 }
