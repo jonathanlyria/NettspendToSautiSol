@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spotify Callback</title>
+</head>
+<body>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    window.opener.postMessage({
+        code: params.get('code'),
+        state: params.get('state')
+    }, window.location.origin);
+    window.close();
+</script>
+</body>
+</html>

@@ -11,6 +11,12 @@ namespace NettspendToSautiSol
         public int TracksPerArtist { get; set; }
         public string PkceToken { get; set; }
     }
+    
+    public class ExchangeCodeRequest
+    {
+        public string Code { get; set; }
+        public string State { get; set; }
+    }
 
 
     [ApiController]
@@ -18,12 +24,14 @@ namespace NettspendToSautiSol
     public class Api : ControllerBase
     {
         private readonly DatabaseManager _database;
-        private ArtistNetwork _artistNetwork;
+        private readonly ArtistNetwork _artistNetwork;
+        private readonly SpotifyAuthorizer _spotifyAuthorizer;
 
-        public Api(DatabaseManager database, ArtistNetwork artistNetwork)
+        public Api(DatabaseManager database, ArtistNetwork artistNetwork, SpotifyAuthorizer spotifyAuthorizer)
         {
             _database = database;
             _artistNetwork = artistNetwork;
+            _spotifyAuthorizer = spotifyAuthorizer;
         }
 
         [HttpGet("find-path")]
@@ -60,19 +68,31 @@ namespace NettspendToSautiSol
         {
             try
             {
-                var spotifyAuthorizer = new SpotifyAuthorizer();
-                string pkceToken = spotifyAuthorizer.GetAuthorizationPKCEAccessToken();
-
-                if (pkceToken == "Did not finish signing in")
-                {
-                    return BadRequest(new { Error = "Did not sign in" });
-                }
-
-                return Ok(new {PkceToken = pkceToken});
+                var (authUrl, state) = _spotifyAuthorizer.GetAuthorizationUrl();
+                return Ok(new { AuthUrl = authUrl, State = state });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "An error occurred during authentication." });
+                // Add proper error logging here
+                return StatusCode(500, new { Error = "Authentication initialization failed" });
+            }
+        }
+
+        [HttpPost("exchange-code")]
+        public IActionResult ExchangeCode([FromBody] ExchangeCodeRequest request)
+        {
+            try
+            {
+                string accessToken = _spotifyAuthorizer.ExchangeCode(request.Code, request.State);
+                return Ok(new { PkceToken = accessToken });
+            }
+            catch (Exception ex)
+            {
+                // Log the actual error details
+                return StatusCode(500, new { 
+                    Error = "Failed to exchange authorization code",
+                    Details = ex.Message 
+                });
             }
         }
 

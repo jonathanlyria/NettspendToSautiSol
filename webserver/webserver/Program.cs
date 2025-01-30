@@ -22,6 +22,8 @@ namespace NettspendToSautiSol
             // Register services
             builder.Services.AddControllers();
             builder.Services.AddSingleton(new DatabaseManager(databasePath));
+            builder.Services.AddSingleton<SpotifyAuthorizer>();
+
             builder.Services.AddSingleton<ArtistNetwork>(sp =>
             {
                 var dbManager = sp.GetRequiredService<DatabaseManager>();

@@ -6,6 +6,7 @@ let pkceToken = null;
 let artist1 = null;
 let artist2 = null;
 let pathIds = [];
+let authState = null; // Store state for code verification
 
 function appendOutput(text, className = '') {
     const newLine = document.createElement('div');
@@ -21,27 +22,68 @@ async function processFlow() {
         if (event.key === 'Enter') {
             input.removeEventListener('keydown', handler);
             appendOutput("> Authenticating...");
-            await authenticateUser();
+            await startAuthentication();
         }
     });
 }
 
-async function authenticateUser() {
+async function startAuthentication() {
     try {
         const response = await fetch(`${API_BASE_URL}/authenticate-user`);
+
+        // First check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            throw new Error(`Invalid response: ${text.slice(0, 100)}`);
+        }
+
         const data = await response.json();
-        console.log(data);
 
         if (response.ok) {
-            pkceToken = data.pkceToken;
-            appendOutput("Authentication successful.", "success");
-            requestArtistOne();
+            authState = data.state;
+            const authWindow = window.open(data.authUrl, 'Spotify Auth', 'width=600,height=800');
+            listenForAuthCallback();
         } else {
-            appendOutput(`Error: ${data.Error}`, "error");
+            appendOutput(`Error: ${data.Error || 'Unknown error'}`, "error");
         }
     } catch (error) {
-        appendOutput(`An error occurred: ${error.message}`, "error");
+        appendOutput(`Authentication failed: ${error.message}`, "error");
+        console.error('Authentication error:', error);
     }
+}
+
+async function listenForAuthCallback() {
+    window.addEventListener('message', async (event) => {
+        if (event.origin !== window.location.origin) return;
+
+        const { code, state } = event.data;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/exchange-code`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, state })
+            });
+
+            // Handle non-JSON responses
+            const contentType = response.headers.get('content-type');
+            const data = contentType?.includes('application/json')
+                ? await response.json()
+                : { Error: await response.text() };
+
+            if (response.ok) {
+                pkceToken = data.pkceToken;
+                appendOutput("Authentication successful.", "success");
+                requestArtistOne();
+            } else {
+                appendOutput(`Error: ${data.Error || 'Unknown error'}`, "error");
+            }
+        } catch (error) {
+            appendOutput(`Code exchange failed: ${error.message}`, "error");
+            console.error('Code exchange error:', error);
+        }
+    });
 }
 
 function requestArtistOne() {
