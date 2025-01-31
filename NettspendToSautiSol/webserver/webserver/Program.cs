@@ -12,7 +12,6 @@ namespace NettspendToSautiSol
             string databasePath =
                @"/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/expander/expander/database.db";
             
-            var dbManager = new DatabaseManager(databasePath);
             // ArtistExpander artistExpander = new(databaseManager);
             
             WebApplicationBuilder builder = WebApplication.CreateBuilder();
@@ -33,7 +32,7 @@ namespace NettspendToSautiSol
             {
                 options.AddPolicy("AllowSpecificOrigin", policy =>
                 {
-                    policy.WithOrigins("http://localhost", "http://127.0.0.1")
+                    policy.WithOrigins("http://localhost", "http://127.0.0.1:8080")
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });
@@ -49,9 +48,10 @@ namespace NettspendToSautiSol
             await Task.Run(() => artistNetwork.LoadNetwork()); 
             Console.WriteLine("Artist network loaded!");
 
-            app.UseCors("AllowSpecificOrigin");
 
             app.UseRouting();
+            
+            app.UseCors("AllowSpecificOrigin");
 
             app.MapControllers();
 

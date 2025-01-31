@@ -1,4 +1,3 @@
-// viewartists.js
 document.addEventListener('DOMContentLoaded', () => {
     const artistContainer = document.getElementById('artist-container');
     const loading = document.getElementById('loading');
@@ -13,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            displayArtists(data.artists);
+            displayArtists(data.artists); // Note lowercase 'artists' to match JSON
         } catch (error) {
             showError(`Failed to load artists: ${error.message}`);
         } finally {

@@ -154,7 +154,7 @@ namespace NettspendToSautiSol
                     return BadRequest("Artist name cannot be empty.");
                 }
 
-                string path = "C:\\Users\\jl154125\\Source\\Repos\\jonathanlyria\\NettspendToSautiSol\\NettspendToSautiSol\\Issues.txt";
+                string path = "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/reportissue.txt";
 
                 if (!System.IO.File.Exists(path))
                 {
@@ -181,7 +181,7 @@ namespace NettspendToSautiSol
                     return BadRequest("Artist name cannot be empty.");
                 }
 
-                string path = "C:\\Users\\jl154125\\Source\\Repos\\jonathanlyria\\NettspendToSautiSol\\NettspendToSautiSol\\RequestedArtists.txt";
+                string path = "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/requestartists.txt";
 
                 if (!System.IO.File.Exists(path))
                 {
@@ -203,11 +203,19 @@ namespace NettspendToSautiSol
             try
             {
                 var artists = _database.GetAllArtists();
-                return Ok(new { Artists = artists });
+                return Ok(new { 
+                    Artists = artists.Select(a => new {
+                        name = a.Name,
+                        spotifyId = a.SpotifyId
+                    }).ToList()
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "Failed to retrieve artists", Details = ex.Message });
+                return StatusCode(500, new { 
+                    Error = "Failed to retrieve artists", 
+                    Details = ex.Message 
+                });
             }
         }
 

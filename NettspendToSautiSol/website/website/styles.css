@@ -1,5 +1,4 @@
-﻿/* General Styles */
-body {
+﻿body {
     margin: 0;
     padding: 20px;
     background-color: black;
@@ -8,7 +7,6 @@ body {
     font-size: clamp(1.5rem, 2vw, 2rem);
 }
 
-/* Console Container */
 #console {
     display: flex;
     flex-direction: column;
@@ -18,7 +16,6 @@ body {
     width: 100%;
 }
 
-/* Output Box */
 #output {
     width: 100%;
     max-width: 600px;
@@ -29,10 +26,9 @@ body {
     padding: 10px;
     overflow-y: auto;
     position: relative;
-    border: 1px solid black; /* Invisible border */
+    border: 1px solid black;
 }
 
-/* Sticky Navigation */
 #navigation {
     position: sticky;
     top: -10px;
@@ -48,7 +44,7 @@ body {
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     padding: 5px 10px;
     transition: background-color 0.3s, color 0.3s;
-    border: 1px solid black; /* Invisible border */
+    border: 1px solid black;
 }
 
 #navigation a:hover {
@@ -60,7 +56,6 @@ body {
     outline: none;
 }
 
-/* Input Box */
 #input, #artist-name {
     color: #1DB954;
     background: black;
@@ -73,7 +68,6 @@ body {
     padding: 10px;
 }
 
-/* Terminal Modal */
 .terminal-modal {
     position: fixed;
     width: 100%;
@@ -100,7 +94,6 @@ body {
     font-size: clamp(1.5rem, 2vw, 2rem);
 }
 
-/* Textarea */
 textarea {
     width: 100%;
     background-color: black;
@@ -112,7 +105,6 @@ textarea {
     border: 1px solid black; /* Invisible border */
 }
 
-/* Buttons */
 button {
     background: black;
     color: #1DB954;
@@ -128,7 +120,6 @@ button:hover {
     color: black;
 }
 
-/* Error and Hidden Elements */
 .error {
     color: red;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
@@ -146,10 +137,9 @@ button:hover {
     font-size: 2em;
     font-family: "Courier-New", monospace;
     color: white;
-    border: 1px solid black; /* Invisible border */
+    border: 1px solid black;
 }
 
-/* Request Artist & Report Issue */
 .request-artist, .report-issue {
     font-family: "Courier-New", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
@@ -164,7 +154,6 @@ button:hover {
     color: black;
 }
 
-/* Add to existing styles */
 .console-item {
     padding: 15px 0;
     border-bottom: 1px solid #1DB95433;
@@ -212,7 +201,6 @@ button:hover {
     font-family: "Courier-New", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
 }
-/* Artist List Styles */
 .artist-item {
     padding: 15px 0;
     border-bottom: 1px solid rgba(29, 185, 84, 0.1);

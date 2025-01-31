@@ -3,9 +3,10 @@ namespace NettspendToSautiSol
     public class ArtistNetwork
     {
         private readonly DatabaseManager _databaseManager;
-        public Dictionary<ArtistNode, List<ArtistEdge>> AdjacencyMatrix { get; set; }
+        public Dictionary<ArtistNode, List<ArtistEdge>> AdjacencyMatrix;
         public ArtistNetwork(DatabaseManager databaseManager)
         {
+            AdjacencyMatrix = new Dictionary<ArtistNode, List<ArtistEdge>>();
             _databaseManager = databaseManager;
         }
         public void LoadNetwork()
