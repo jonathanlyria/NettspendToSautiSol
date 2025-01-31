@@ -1,0 +1,244 @@
+﻿/* General Styles */
+body {
+    margin: 0;
+    padding: 20px;
+    background-color: black;
+    color: white;
+    font-family: "Courier-New", monospace;
+    font-size: clamp(1.5rem, 2vw, 2rem);
+}
+
+/* Console Container */
+#console {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+}
+
+/* Output Box */
+#output {
+    width: 100%;
+    max-width: 600px;
+    min-height: 300px;
+    background: black;
+    color: white;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    padding: 10px;
+    overflow-y: auto;
+    position: relative;
+    border: 1px solid black; /* Invisible border */
+}
+
+/* Sticky Navigation */
+#navigation {
+    position: sticky;
+    top: -10px;
+    right: -10px;
+    display: flex;
+    gap: 10px;
+}
+
+#navigation a {
+    color: #1DB954;
+    text-decoration: none;
+    font-family: "Courier-New", monospace;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    padding: 5px 10px;
+    transition: background-color 0.3s, color 0.3s;
+    border: 1px solid black; /* Invisible border */
+}
+
+#navigation a:hover {
+    background-color: #1DB954;
+    color: black;
+}
+
+#navigation a:focus {
+    outline: none;
+}
+
+/* Input Box */
+#input, #artist-name {
+    color: #1DB954;
+    background: black;
+    outline: none;
+    width: 100%;
+    max-width: 600px;
+    font-family: "Courier-New", monospace;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    border: 1px solid black; /* Invisible border */
+    padding: 10px;
+}
+
+/* Terminal Modal */
+.terminal-modal {
+    position: fixed;
+    width: 100%;
+    max-width: 600px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: black;
+    color: white;
+    padding: 20px;
+    font-family: "Courier-New", monospace;
+    border: 1px solid #1DB954; 
+}
+
+.terminal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-title {
+    color: #1DB954;
+    margin: 0;
+    font-size: clamp(1.5rem, 2vw, 2rem);
+}
+
+/* Textarea */
+textarea {
+    width: 100%;
+    background-color: black;
+    color: white;
+    padding: 10px;
+    font-family: "Courier-New", monospace;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    resize: none;
+    border: 1px solid black; /* Invisible border */
+}
+
+/* Buttons */
+button {
+    background: black;
+    color: #1DB954;
+    padding: 5px 10px;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    cursor: pointer;
+    font-family: "Courier-New", monospace;
+    border: 1px solid black; /* Invisible border */
+}
+
+button:hover {
+    background: #1DB954;
+    color: black;
+}
+
+/* Error and Hidden Elements */
+.error {
+    color: red;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    margin-top: 5px;
+}
+
+.hidden {
+    display: none;
+}
+
+#header-title {
+    position: sticky;
+    text-align: center;
+    margin: 100px 0;
+    font-size: 2em;
+    font-family: "Courier-New", monospace;
+    color: white;
+    border: 1px solid black; /* Invisible border */
+}
+
+/* Request Artist & Report Issue */
+.request-artist, .report-issue {
+    font-family: "Courier-New", monospace;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    padding: 5px 10px;
+    background: black;
+    color: #1DB954;
+    border: 1px solid black; /* Invisible border */
+}
+
+.request-artist:hover, .report-issue:hover {
+    background: #1DB954;
+    color: black;
+}
+
+/* Add to existing styles */
+.console-item {
+    padding: 15px 0;
+    border-bottom: 1px solid #1DB95433;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: terminalEntry 0.5s ease-in-out;
+}
+
+.data-field {
+    color: #fff;
+    font-family: "Courier-New", monospace;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+}
+
+.terminal-link {
+    color: #1DB954;
+    text-decoration: none;
+    font-family: "Courier-New", monospace;
+    padding: 5px 10px;
+    border: 1px solid #1DB95433;
+    transition: all 0.3s ease;
+}
+
+.terminal-link:hover {
+    background-color: #1DB954;
+    color: black;
+    border-color: #1DB954;
+}
+
+@keyframes terminalEntry {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading {
+    color: #1DB954;
+    padding: 20px;
+    font-family: "Courier-New", monospace;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+}
+/* Artist List Styles */
+.artist-item {
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(29, 185, 84, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.artist-item span {
+    flex-grow: 1;
+    margin-right: 20px;
+}
+
+.spotify-link {
+    color: #1DB954;
+    text-decoration: none;
+    padding: 5px 10px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.spotify-link:hover {
+    background-color: #1DB954;
+    color: black;
+}
+
+#loading {
+    color: #1DB954;
+    padding: 20px 0;
+}
