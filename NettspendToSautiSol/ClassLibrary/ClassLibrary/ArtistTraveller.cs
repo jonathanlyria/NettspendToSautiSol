@@ -1,5 +1,5 @@
 namespace NettspendToSautiSol;
-
+// Citation on Dijktras Algorithm
 public class ArtistTraveller
 {
     public ArtistNode StartArtistNode { get; set; }
@@ -17,7 +17,7 @@ public class ArtistTraveller
         Cost = double.MaxValue;
         Traverse();
     }
-
+    
     public void Traverse()
     {
         PriorityQueue<ArtistNode, double> priorityQueue = new PriorityQueue<ArtistNode, double>();

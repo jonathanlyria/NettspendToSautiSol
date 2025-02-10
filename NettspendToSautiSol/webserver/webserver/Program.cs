@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.IO;
-
+// Citation of Cors policy 
+// Citation of addign signletons 
+// Citation of Asp.Net core
 namespace NettspendToSautiSol
 {
     public class Program

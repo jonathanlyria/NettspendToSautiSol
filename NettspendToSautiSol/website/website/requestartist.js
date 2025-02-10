@@ -1,4 +1,6 @@
-﻿document.getElementById('requestartist-link').addEventListener('click', () => {
+﻿// Citation of json in javascript
+
+document.getElementById('requestartist-link').addEventListener('click', () => {
     document.getElementById('request-artist-modal').classList.remove('hidden');
 });
 

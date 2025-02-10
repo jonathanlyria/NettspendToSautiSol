@@ -1,4 +1,5 @@
-﻿document.getElementById('report-link').addEventListener('click', () => {
+﻿// Citation of modals
+document.getElementById('report-link').addEventListener('click', () => {
     document.getElementById('report-issue-modal').classList.remove('hidden');
 });
 

@@ -1,11 +1,10 @@
-using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite; //cite******************
 
 namespace NettspendToSautiSol;
-
 public class DatabaseManager
 {
     private readonly string _connectionString;
-
+    
     public DatabaseManager(string databasePath)
     {
         _connectionString = $"Data Source={databasePath}";
@@ -116,30 +115,6 @@ public class DatabaseManager
             }
         }
     }
-
-    public List<string> GetArtistNames()
-    {
-        List<string> artistNames = new List<string>();
-
-        using (SqliteConnection connection = new SqliteConnection(_connectionString))
-        {
-            connection.Open();
-            string selectQuery = "SELECT ArtistName FROM Artist;";
-
-            using (SqliteCommand cmd = new SqliteCommand(selectQuery, connection))
-            {
-                using (SqliteDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        artistNames.Add(reader.GetString(0));
-                    }
-                }
-            }
-            return artistNames;
-        }
-    }
-
 
 
     public List<ArtistNode> GetAllArtists()

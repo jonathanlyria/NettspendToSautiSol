@@ -1,7 +1,8 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-
+// Citation of Spotify API 
+// Citation of Regex
 namespace NettspendToSautiSol
 {
     public class PlaylistCreator
@@ -70,10 +71,8 @@ namespace NettspendToSautiSol
                 client.DefaultRequestHeaders.Authorization = 
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-                // Get the user ID
                 string userId = GetUserId();
 
-                // Prepare the request payload
                 var payload = new
                 {
                     name = $"from {_artists.First().Name} to {_artists.Last().Name}",
@@ -85,7 +84,6 @@ namespace NettspendToSautiSol
                 string jsonPayload = JsonSerializer.Serialize(payload);
                 StringContent content = new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json");
 
-                // Send the POST request to create the playlist
                 HttpResponseMessage response = client.PostAsync($"https://api.spotify.com/v1/users/{userId}/playlists", content).Result;
 
                 if (response.IsSuccessStatusCode)
@@ -111,21 +109,17 @@ namespace NettspendToSautiSol
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-                // Spotify API endpoint for adding tracks to a playlist
                 string url = $"https://api.spotify.com/v1/playlists/{playlistId}/tracks";
 
-                // Prepare the request body with track URIs
                 var requestBody = new
                 {
                     uris = trackIds.Select(trackId => $"spotify:track:{trackId}").ToArray()
                 };
-
-                // Serialize the request body to JSON
+                
                 string jsonBody = JsonSerializer.Serialize(requestBody);
 
                 StringContent content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
-                // Send POST request
                 HttpResponseMessage response = client.PostAsync(url, content).Result;
 
                 if (!response.IsSuccessStatusCode)
@@ -146,7 +140,6 @@ namespace NettspendToSautiSol
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-                // Send GET request to Spotify's "me" endpoint
                 HttpResponseMessage response = client.GetAsync("https://api.spotify.com/v1/me").Result;
 
                 if (!response.IsSuccessStatusCode)
@@ -156,7 +149,6 @@ namespace NettspendToSautiSol
                     throw new Exception("Failed to retrieve user ID.");
                 }
 
-                // Parse the response to extract the user ID
                 string jsonResponse = response.Content.ReadAsStringAsync().Result;
                 JsonDocument document = JsonDocument.Parse(jsonResponse);
                 string userId = document.RootElement.GetProperty("id").GetString();
@@ -173,7 +165,6 @@ namespace NettspendToSautiSol
                 Console.WriteLine($"Searching for feature between {artist1.Name} and {artist2.Name}");
                 client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-                // Create the query stnring for both artists
                 string query = Uri.EscapeDataString($"{artist1.Name} {artist2.Name}");
                 string url = $"https://api.spotify.com/v1/search?q={query}&type=track&limit=10";
 
@@ -201,7 +192,6 @@ namespace NettspendToSautiSol
                     bool hasArtist1 = artists.Any(a => string.Equals(a.GetProperty("name").GetString(), artist1.Name, StringComparison.OrdinalIgnoreCase));
                     bool hasArtist2 = artists.Any(a => string.Equals(a.GetProperty("name").GetString(), artist2.Name, StringComparison.OrdinalIgnoreCase));
 
-                    // If both artists are found in the track's artists array, return the song ID
                     if (hasArtist1 && hasArtist2 && artists.Count() == 2)
                     {
                         Console.WriteLine($"Found Feature: {track.GetProperty("name").GetString()}");
@@ -220,16 +210,10 @@ namespace NettspendToSautiSol
         }
         private string NormalizeSongName(string songName)
         {
-            // Convert to lowercase
             songName = songName.ToLower();
 
-            // Remove content in parentheses or after a dash
             songName = Regex.Replace(songName, @"\s*-\s*.*|\s*\(.*?\)", "");
-
-            // Remove punctuation
             songName = Regex.Replace(songName, @"[^\w\s]", "");
-
-            // Remove extra spaces and trim
             songName = Regex.Replace(songName, @"\s{2,}", " ").Trim();
 
             return songName;
@@ -256,14 +240,13 @@ namespace NettspendToSautiSol
 
                 string jsonResponse = response.Content.ReadAsStringAsync().Result;
                 JsonDocument document = JsonDocument.Parse(jsonResponse);
-                JsonElement.ArrayEnumerator topSongs = document.RootElement.GetProperty("tracks").EnumerateArray(); // Fixed "items" to "tracks"
+                JsonElement.ArrayEnumerator topSongs = document.RootElement.GetProperty("tracks").EnumerateArray(); 
 
                 List<string> potentialSongs = new();
                 foreach (JsonElement song in topSongs)
                 {
-                    // Check if the song has only one artist (the primary artist)
                     JsonElement.ArrayEnumerator songArtists = song.GetProperty("artists").EnumerateArray();
-                    bool hasFeatures = songArtists.Count() > 1; // More than one artist indicates features
+                    bool hasFeatures = songArtists.Count() > 1;
 
                     if (!hasFeatures)
                     {

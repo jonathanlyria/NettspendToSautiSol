@@ -1,4 +1,6 @@
-﻿const input = document.getElementById('input');
+﻿// Citation of 
+
+const input = document.getElementById('input');
 const output = document.getElementById('output');
 let headerTitle = document.getElementById('header-title');
 

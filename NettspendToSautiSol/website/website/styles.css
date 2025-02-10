@@ -3,8 +3,22 @@
     padding: 20px;
     background-color: black;
     color: white;
-    font-family: "Courier-New", monospace;
+    font-family: "Gotham-Medium", monospace;
     font-size: clamp(1.5rem, 2vw, 2rem);
+}
+
+@font-face {
+    font-family: 'Gotham-Black';
+    src: url('Gotham-Black.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Gotham';
+    src: url('Gotham-Medium.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
 }
 
 #console {
@@ -40,7 +54,7 @@
 #navigation a {
     color: #1DB954;
     text-decoration: none;
-    font-family: "Courier-New", monospace;
+    font-family: "Gotham-Medium", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     padding: 5px 10px;
     transition: background-color 0.3s, color 0.3s;
@@ -62,7 +76,7 @@
     outline: none;
     width: 100%;
     max-width: 600px;
-    font-family: "Courier-New", monospace;
+    font-family: "Gotham-Medium", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     border: 1px solid black; /* Invisible border */
     padding: 10px;
@@ -78,7 +92,7 @@
     background-color: black;
     color: white;
     padding: 20px;
-    font-family: "Courier-New", monospace;
+    font-family: "Gotham-Medium", monospace;
     border: 1px solid #1DB954; 
 }
 
@@ -99,7 +113,7 @@ textarea {
     background-color: black;
     color: white;
     padding: 10px;
-    font-family: "Courier-New", monospace;
+    font-family: "Gotham-Medium", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     resize: none;
     border: 1px solid black; /* Invisible border */
@@ -111,7 +125,7 @@ button {
     padding: 5px 10px;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     cursor: pointer;
-    font-family: "Courier-New", monospace;
+    font-family: "Gotham-Medium", monospace;
     border: 1px solid black; /* Invisible border */
 }
 
@@ -135,13 +149,13 @@ button:hover {
     text-align: center;
     margin: 100px 0;
     font-size: 2em;
-    font-family: "Courier-New", monospace;
+    font-family: "Gotham-Black", monospace;
     color: white;
     border: 1px solid black;
 }
 
 .request-artist, .report-issue {
-    font-family: "Courier-New", monospace;
+    font-family: "Gotham-Medium", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     padding: 5px 10px;
     background: black;
@@ -165,14 +179,14 @@ button:hover {
 
 .data-field {
     color: #fff;
-    font-family: "Courier-New", monospace;
+    font-family: "Gotham-Medium", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
 }
 
 .terminal-link {
     color: #1DB954;
     text-decoration: none;
-    font-family: "Courier-New", monospace;
+    font-family: "Gotham-Medium", monospace;
     padding: 5px 10px;
     border: 1px solid #1DB95433;
     transition: all 0.3s ease;
@@ -198,7 +212,7 @@ button:hover {
 .loading {
     color: #1DB954;
     padding: 20px;
-    font-family: "Courier-New", monospace;
+    font-family: "Gotham-Medium", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
 }
 .artist-item {

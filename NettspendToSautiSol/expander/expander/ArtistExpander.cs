@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-
+// Citation of Last FM documentation 
+// Citation of HTTP POST/GET
+// Citation of HTTP Json parsing
+// Citation of exponential backoff algorithms
+// Citation of 
 namespace NettspendToSautiSol
 {
     public class ArtistExpander
@@ -28,18 +32,9 @@ namespace NettspendToSautiSol
             _wastedCalls = 0;
             _totalCalls = 0;
 
-            // Queue = _databaseManager.GetExpanderQueue();
             Queue = new PriorityQueue<ArtistNode, double>();
-
-            if (_databaseManager.GetExpanderQueue() == null)
-            {
-                Queue.Enqueue(new ArtistNode("YT", "0YsYhESxyHC1kuMm9Mbm3C"), 0);
-
-            }
-            else
-            {
-                Queue = _databaseManager.GetExpanderQueue();
-            }
+            Queue = _databaseManager.GetExpanderQueue();
+      
 
             _accessToken = _spotifyClientCredentials.GetAccessTokenAsync().Result.AccessToken;
             _tokenExpiryTime =
@@ -77,11 +72,6 @@ namespace NettspendToSautiSol
 
                     foreach (KeyValuePair<ArtistNode, double> similarArtist in similarArtists)
                     {
-                        Console.WriteLine($"Comparing {similarArtist.Key.Name} to Nettspend");
-                        if (similarArtist.Key.Name == "Nettspend")
-                        {
-                            return;
-                        }
                         if (!visited.Contains(similarArtist.Key))
                         {
                             Queue.Enqueue(similarArtist.Key, similarArtist.Value);

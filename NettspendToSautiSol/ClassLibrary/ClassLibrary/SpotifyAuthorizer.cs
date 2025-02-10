@@ -3,11 +3,14 @@ using System.Text;
 using System.Web;
 using System.Collections.Concurrent;
 using System.Text.Json;
-
+// Citation on PKCE BASICS
+// Citation on Hashing
+// Citation on states
+// Citation on Code challenges and code verifiers
 public class SpotifyAuthorizer
 {
     private readonly string _clientId = "c6ed8f690a15491f9deb29547c8447ff";
-    private readonly string _redirectUri = "http://127.0.0.1:8080/website/callback/callback.html"; 
+    private readonly string _redirectUri = "http://127.0.0.1:8080/website/website/callback.html"; 
     private readonly ConcurrentDictionary<string, string> _codeVerifiers = new();
 
     public (string AuthUrl, string State) GetAuthorizationUrl()

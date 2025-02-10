@@ -1,5 +1,6 @@
 namespace NettspendToSautiSol
 {
+    // Citation on changing class equals
     public class ArtistNode 
     {
         public string Name;
