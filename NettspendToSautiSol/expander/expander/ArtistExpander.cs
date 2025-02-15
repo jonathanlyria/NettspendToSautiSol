@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 // Citation of Last FM documentation 
 // Citation of HTTP POST/GET
@@ -24,7 +25,7 @@ namespace NettspendToSautiSol
         private int _totalCalls;
         private int _numberOfArtists;
         public string DebugLine;
-        private PriorityQueue<ArtistNode, int>? _queue;
+        private Queue<ArtistNode>? _queue;
 
         private static readonly HttpClient HttpClient = new HttpClient();
 
@@ -36,11 +37,11 @@ namespace NettspendToSautiSol
             _wastedCalls = 0;
             _totalCalls = 0;
 
-            _queue = new PriorityQueue<ArtistNode, int>();
+            _queue = new Queue<ArtistNode>();
 
             if (_databaseManager.GetExpanderQueue() == null)
             {
-                _queue.Enqueue(new ArtistNode("Drake", "3TVXtAsR1Inumwj472S9r4"), 0);
+                _queue.Enqueue(new ArtistNode("Drake", "3TVXtAsR1Inumwj472S9r4"));
             }
             else
             {
@@ -74,17 +75,16 @@ namespace NettspendToSautiSol
                 {
                     ArtistNode currentNode = _queue.Dequeue();
                     _databaseManager.UpdateExpanded(currentNode.SpotifyId);
-                    Dictionary<ArtistNode,int> similarArtists = GetSimilarArtists(currentNode);
+                    List<ArtistNode> similarArtists = GetSimilarArtists(currentNode);
 
                     callCount++;
                     Console.WriteLine($"{callCount} API calls made");
 
-                    foreach (KeyValuePair<ArtistNode, int> similarArtist in similarArtists)
+                    foreach (ArtistNode similarArtist in similarArtists)
                     {
-                        if (!visited.Contains(similarArtist.Key))
+                        if (!visited.Contains(similarArtist))
                         {
-                            _queue.Enqueue(similarArtist.Key, similarArtist.Value);
-                            visited.Add(similarArtist.Key);
+                            _queue.Enqueue(similarArtist);
                         }
                     }
                 }
@@ -112,10 +112,10 @@ namespace NettspendToSautiSol
             }
         }
 
-        private Dictionary<ArtistNode, int> GetSimilarArtists(ArtistNode startingArtistNode)
+        private List<ArtistNode> GetSimilarArtists(ArtistNode startingArtistNode)
         {
             RefreshAccessToken().Wait();
-            Dictionary<ArtistNode, int> similarArtistDictionary = new Dictionary<ArtistNode, int>();
+            List<ArtistNode> similarArtistDictionary = new List<ArtistNode>();
 
             // Clear any previous Authorization header to ensure LastFM API is called without it.
             HttpClient.DefaultRequestHeaders.Authorization = null;
@@ -150,9 +150,11 @@ namespace NettspendToSautiSol
 
                     GetSpotifyDetails spotifyDetails = new GetSpotifyDetails(foundArtist, _accessToken);
                     string? spotifyId = spotifyDetails.SpotifyId;
+                    string? name = spotifyDetails.Name;
                     int? popularity = spotifyDetails.Popularity;
+                    string? date = spotifyDetails.LatestTopTrackReleaseDate;
 
-                    if (spotifyId == null || popularity == null || (_databaseManager.DoesIdExist(spotifyId) && _databaseManager.DoesConnectionExist(startingArtistNode.Name, foundArtist)) || popularity < 40)
+                    if (spotifyId == null || popularity == null || name == null || (_databaseManager.DoesIdExist(spotifyId) && _databaseManager.DoesConnectionExist(startingArtistNode.Name, foundArtist)) || !spotifyDetails.MeetsPopularityRequirement())
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         switch (true)
@@ -160,17 +162,17 @@ namespace NettspendToSautiSol
                             case var _ when spotifyId == null:
                                 Console.WriteLine($"Skipping {foundArtist} due to missing Spotify ID");
                                 break;
-
                             case var _ when popularity == null:
                                 Console.WriteLine($"Skipping {foundArtist} due to missing popularity data");
                                 break;
-
                             case var _ when _databaseManager.DoesIdExist(spotifyId) && _databaseManager.DoesConnectionExist(startingArtistNode.Name, foundArtist):
                                 Console.WriteLine($"Skipping {foundArtist} as the Spotify ID already exists in the database and the connection already exists");
                                 break;
-
-                            case var _ when popularity < 40:
-                                Console.WriteLine($"Skipping {foundArtist} due to low popularity ({popularity})");
+                            case var _ when name == null:
+                                Console.WriteLine($"Skipping {foundArtist} due to missing name");
+                                break;
+                            case var _ when !spotifyDetails.MeetsPopularityRequirement():
+                                Console.WriteLine($"Skipping {foundArtist} due to low popularity for date ({popularity} {date})");
                                 break;
                             default:
                                 Console.WriteLine($"Skipping {foundArtist}");
@@ -184,25 +186,25 @@ namespace NettspendToSautiSol
 
                     if (_databaseManager.DoesIdExist(spotifyId))
                     {
-                        _databaseManager.AddConnection(startingArtistNode.Name, foundArtist, match);
+                        _databaseManager.AddConnection(startingArtistNode.Name, name, match);
                         Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine($"Adding new connection between {startingArtistNode.Name} and {foundArtist} as the Spotify ID exists in database");
+                        Console.WriteLine($"Adding new connection between {startingArtistNode.Name} and {name} as the Spotify ID exists in database");
                         Console.WriteLine($"Total calls: {_totalCalls++}");
                         Console.ResetColor();
                         continue;
                     }
                     
-                    _databaseManager.AddArtist(foundArtist, spotifyId, (int)popularity);
-                    _databaseManager.AddConnection(startingArtistNode.Name, foundArtist, match);
+                    _databaseManager.AddArtist(name, spotifyId);
+                    _databaseManager.AddConnection(startingArtistNode.Name, name, match);
 
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"Added {foundArtist} to the database and added a new connection between {startingArtistNode.Name} and {foundArtist}");
+                    Console.WriteLine($"Added {name} to the database and added a new connection between {startingArtistNode.Name} and {name}");
                     Console.WriteLine($"Total calls: {_totalCalls++}");
                     Console.WriteLine($"Total artists: {_numberOfArtists++}");
                     Console.WriteLine($"Popularity: {popularity}");
                     Console.ResetColor();
 
-                    similarArtistDictionary.Add(new ArtistNode(foundArtist, spotifyId), 1);
+                    similarArtistDictionary.Add(new ArtistNode(name, spotifyId));
                 }
             }
 
@@ -252,6 +254,7 @@ namespace NettspendToSautiSol
         {
             public string? SpotifyId { get; private set; }
             public int? Popularity { get; private set; }
+            public string? Name { get; private set; }
             public string? LatestTopTrackReleaseDate { get; private set; }
             private readonly string _accessToken;
 
@@ -279,6 +282,7 @@ namespace NettspendToSautiSol
                     if (!artistData.Equals(default(JsonElement)))
                     {
                         SpotifyId = artistData.GetProperty("id").GetString();
+                        Name = artistData.GetProperty("name").GetString();
                         Popularity = artistData.GetProperty("popularity").GetInt32();
                     }
                 }
@@ -304,6 +308,34 @@ namespace NettspendToSautiSol
                         .FirstOrDefault();
                 }
                 HttpClient.DefaultRequestHeaders.Authorization = null;
+            }
+            
+            
+            public bool MeetsPopularityRequirement()
+            {
+                if (LatestTopTrackReleaseDate == null || Popularity == null)
+                    return false;
+
+                // Validate that LatestTopTrackReleaseDate is in the expected format "yyyy-MM-dd"
+                if (!Regex.IsMatch(LatestTopTrackReleaseDate, @"^\d{4}-\d{2}-\d{2}$"))
+                {
+                    return false; // Reject if the format is incorrect
+                }
+    
+                DateTime latestDate = DateTime.Parse(LatestTopTrackReleaseDate);
+
+                TimeSpan timeSinceRelease = DateTime.UtcNow - latestDate;
+                int yearsSinceRelease = (int)(timeSinceRelease.TotalDays / 365);
+
+                int minPopularity = yearsSinceRelease switch
+                {
+                    < 1 => 45, 
+                    <= 5 => 50,
+                    <= 10 => 60,
+                    _ => 65
+                };
+
+                return Popularity >= minPopularity;
             }
         }
 

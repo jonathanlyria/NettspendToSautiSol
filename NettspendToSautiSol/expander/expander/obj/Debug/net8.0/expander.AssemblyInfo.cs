@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("expander")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4fdf38f4b7a6be89cc40c9275981e2abcb9ea00f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ccc3b2dee6376203098b9d7457541935a0fd8fbf")]
 [assembly: System.Reflection.AssemblyProductAttribute("expander")]
 [assembly: System.Reflection.AssemblyTitleAttribute("expander")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

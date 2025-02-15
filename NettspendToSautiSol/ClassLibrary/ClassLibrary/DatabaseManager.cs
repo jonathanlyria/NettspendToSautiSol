@@ -26,8 +26,7 @@ public class DatabaseManager
                 CREATE TABLE IF NOT EXISTS Artist (
                     ArtistName TEXT NOT NULL PRIMARY KEY,
                     SpotifyID TEXT NOT NULL,
-                    Expanded BIT NOT NULL, 
-                    Popularity REAL NOT NULL
+                    Expanded BIT NOT NULL
                 );";
             using (SqliteCommand cmd = new SqliteCommand(createArtistTableQuery, connection))
             {
@@ -249,15 +248,15 @@ public class DatabaseManager
         return connections;
     }
 
-    public PriorityQueue<ArtistNode, int>? GetExpanderQueue()
+    public Queue<ArtistNode>? GetExpanderQueue()
     {
-        PriorityQueue<ArtistNode, int> queue = new PriorityQueue<ArtistNode, int>();
+        Queue<ArtistNode> queue = new Queue<ArtistNode>();
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
 
             string selectQuery = @"
-           SELECT ArtistName, SpotifyID, Popularity FROM Artist WHERE Expanded = 0";
+           SELECT ArtistName, SpotifyID FROM Artist WHERE Expanded = 0";
 
             using (SqliteCommand cmd = new SqliteCommand(selectQuery, connection))
             {
@@ -268,8 +267,8 @@ public class DatabaseManager
                     {
                         string artistName = reader.GetString(0);
                         string spotifyId = reader.GetString(1);
-                        int popularity = reader.GetInt32(2);
-                        queue.Enqueue(new ArtistNode(artistName, spotifyId), popularity);
+                        
+                        queue.Enqueue(new ArtistNode(artistName, spotifyId));
                     }
                 }
             }
@@ -277,18 +276,17 @@ public class DatabaseManager
         return queue;
     }
 
-    public void AddArtist(string artistName, string spotifyId, int popularity)
+    public void AddArtist(string artistName, string spotifyId)
     {
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
 
-            string insertQuery = "INSERT INTO Artist (ArtistName, Expanded, SpotifyID, popularity) VALUES (@artistName, 0, @spotifyId, @popularity);";
+            string insertQuery = "INSERT INTO Artist (ArtistName, Expanded, SpotifyID) VALUES (@artistName, 0, @spotifyId);";
             using (SqliteCommand cmd = new SqliteCommand(insertQuery, connection))
             {
                 cmd.Parameters.AddWithValue("@artistName", artistName);
                 cmd.Parameters.AddWithValue("@spotifyId", spotifyId);
-                cmd.Parameters.AddWithValue("@popularity", popularity);
                 cmd.ExecuteNonQuery();
             }
         }
