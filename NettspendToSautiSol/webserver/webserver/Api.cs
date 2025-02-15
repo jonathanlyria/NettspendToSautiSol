@@ -45,7 +45,7 @@ namespace NettspendToSautiSol
                 ArtistNode artist2Node = new ArtistNode(artist2, _database.GetIdFromName(artist2));
                 Console.WriteLine(_database.GetIdFromName(artist2));
 
-                ArtistTraveller traveller = new ArtistTraveller(artist1Node, artist2Node, _artistNetwork);
+                Traveller traveller = new Traveller(artist1Node, artist2Node, _artistNetwork);
                 foreach (string id in traveller.Path.Select(a => a.SpotifyId).ToList())
                 {
                     Console.WriteLine(id);

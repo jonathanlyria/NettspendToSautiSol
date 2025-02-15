@@ -1,6 +1,6 @@
 namespace NettspendToSautiSol;
 // Citation on Dijktras Algorithm
-public class ArtistTraveller
+public class Traveller
 {
     public ArtistNode StartArtistNode { get; set; }
     public ArtistNode EndArtistNode { get; set; }
@@ -8,7 +8,7 @@ public class ArtistTraveller
     public double Cost { get; set; }
     private ArtistNetwork ArtistNetwork { get; set; }
 
-    public ArtistTraveller(ArtistNode startArtistNode, ArtistNode endArtistNode, ArtistNetwork artistNetwork)
+    public Traveller(ArtistNode startArtistNode, ArtistNode endArtistNode, ArtistNetwork artistNetwork)
     {
         StartArtistNode = startArtistNode;
         EndArtistNode = endArtistNode;
@@ -38,7 +38,7 @@ public class ArtistTraveller
             ArtistNode currentArtist = priorityQueue.Dequeue();
             double currentDistance = distances[currentArtist];
 
-            if (currentArtist.Equals(EndArtistNode))
+            if (currentArtist.Name == EndArtistNode.Name)
                 break;
 
             foreach (ArtistEdge connection in ArtistNetwork.GetListOfConnections(currentArtist))

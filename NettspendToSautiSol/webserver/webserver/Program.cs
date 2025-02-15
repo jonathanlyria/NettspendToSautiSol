@@ -26,7 +26,6 @@ namespace NettspendToSautiSol
             {
                 DatabaseManager dbManager = sp.GetRequiredService<DatabaseManager>();
                 ArtistNetwork artistNetwork = new ArtistNetwork(dbManager);
-                artistNetwork.LoadNetwork(); 
                 return artistNetwork;
             });
 
@@ -44,12 +43,6 @@ namespace NettspendToSautiSol
             WebApplication app = builder.Build();
 
             Console.WriteLine("Starting the application...");
-
-            ArtistNetwork artistNetwork = app.Services.GetRequiredService<ArtistNetwork>();
-            Console.WriteLine("Waiting for the artist network to finish loading...");
-            await Task.Run(() => artistNetwork.LoadNetwork()); 
-            Console.WriteLine("Artist network loaded!");
-
 
             app.UseRouting();
             

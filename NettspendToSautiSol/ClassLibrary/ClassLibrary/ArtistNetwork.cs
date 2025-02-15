@@ -8,6 +8,7 @@ namespace NettspendToSautiSol
         {
             AdjacencyMatrix = new Dictionary<ArtistNode, List<ArtistEdge>>();
             _databaseManager = databaseManager;
+            LoadNetwork();
         }
         public void LoadNetwork()
         {
