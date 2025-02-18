@@ -9,7 +9,7 @@ public class DatabaseManager
     {
         _connectionString = $"Data Source={databasePath}";
 
-        if (!File.Exists(databasePath))
+        if (!File.Exists(databasePath)) 
         {
             File.Create(databasePath).Close();
             InitializeDatabase();
@@ -50,7 +50,7 @@ public class DatabaseManager
     }
 
 
-    public bool DoesArtistExist(string artistName)
+    public bool IsArtistInDbByName(string artistName)
     {
         using SqliteConnection connection = new SqliteConnection(_connectionString);
         {
@@ -72,7 +72,7 @@ public class DatabaseManager
         }
     }
 
-    public bool DoesConnectionExist(string artistName1, string artistName2)
+    public bool DoesConnectionExistInDb(string artistName1, string artistName2)
     {
         using SqliteConnection connection = new SqliteConnection(_connectionString);
         {
@@ -116,7 +116,7 @@ public class DatabaseManager
     }
 
 
-    public List<ArtistNode> GetAllArtists()
+    public List<ArtistNode> GetAllArtistNodesInDb()
     {
         List<ArtistNode> artists = new List<ArtistNode>();
 
@@ -142,7 +142,7 @@ public class DatabaseManager
         return artists;
     }
 
-    public bool DoesIdExist(string id)
+    public bool IsArtistInDbById(string id)
     {
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
         {
@@ -213,9 +213,9 @@ public class DatabaseManager
         return name;
     }
     
-    public List<ArtistEdge> GetAllConnections()
+    public List<ArtistConnection> GetAllConnectionsInDb()
     {
-        List<ArtistEdge> connections = new List<ArtistEdge>();
+        List<ArtistConnection> connections = new List<ArtistConnection>();
 
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
         {
@@ -238,7 +238,7 @@ public class DatabaseManager
                         ArtistNode artist1 = new ArtistNode(artistName1, artistId1);
                         ArtistNode artist2 = new ArtistNode(artistName2, artistId2);
 
-                        connections.Add(new ArtistEdge(artist1, artist2, strength));
+                        connections.Add(new ArtistConnection(artist1, artist2, strength));
 
                     }
                 }
@@ -248,7 +248,7 @@ public class DatabaseManager
         return connections;
     }
 
-    public Queue<ArtistNode>? GetExpanderQueue()
+    public Queue<ArtistNode>? GetExpanderQueueFromDb()
     {
         Queue<ArtistNode> queue = new Queue<ArtistNode>();
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
@@ -276,7 +276,7 @@ public class DatabaseManager
         return queue;
     }
 
-    public void AddArtist(string artistName, string spotifyId)
+    public void AddArtistToDb(string artistName, string spotifyId)
     {
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
         {
@@ -292,7 +292,7 @@ public class DatabaseManager
         }
     }
 
-    public void AddConnection(string artistName1, string artistName2, double strength)
+    public void AddConnectionToDb(string artistName1, string artistName2, double strength)
     {
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
         {

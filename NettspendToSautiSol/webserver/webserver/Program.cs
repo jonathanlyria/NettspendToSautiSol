@@ -12,7 +12,7 @@ namespace NettspendToSautiSol
         public static async Task Main(string[] args)
         {
             string databasePath =
-               @"/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/expander/expander/database.db";
+               @"/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/NetworkExpander/NetworkExpander/database.db";
             
             // ArtistExpander artistExpander = new(databaseManager);
             
@@ -43,6 +43,12 @@ namespace NettspendToSautiSol
             WebApplication app = builder.Build();
 
             Console.WriteLine("Starting the application...");
+
+            ArtistNetwork artistNetwork = app.Services.GetRequiredService<ArtistNetwork>();
+            Console.WriteLine("Waiting for the artist network to finish loading...");
+            await Task.Run(() => artistNetwork.LoadNetwork()); 
+            Console.WriteLine("Artist network loaded!");
+
 
             app.UseRouting();
             

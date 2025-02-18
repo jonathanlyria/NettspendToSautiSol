@@ -7,12 +7,7 @@
     font-size: clamp(1.5rem, 2vw, 2rem);
 }
 
-@font-face {
-    font-family: 'Gotham-Black';
-    src: url('Gotham-Black.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
+
 
 @font-face {
     font-family: 'Gotham';
@@ -149,7 +144,7 @@ button:hover {
     text-align: center;
     margin: 100px 0;
     font-size: 2em;
-    font-family: "Gotham-Black", monospace;
+    font-family: "Gotham-Medium", monospace;
     color: white;
     border: 1px solid black;
 }

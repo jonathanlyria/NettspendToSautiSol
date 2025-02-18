@@ -40,12 +40,15 @@ namespace NettspendToSautiSol
         {
             try
             {
+                Console.WriteLine("Finding path from " + artist1 + " to " + artist2);
                 ArtistNode artist1Node = new ArtistNode(artist1, _database.GetIdFromName(artist1));
                 Console.WriteLine(_database.GetIdFromName(artist1));
                 ArtistNode artist2Node = new ArtistNode(artist2, _database.GetIdFromName(artist2));
                 Console.WriteLine(_database.GetIdFromName(artist2));
+                Console.WriteLine($"b4 traveller");
 
                 Traveller traveller = new Traveller(artist1Node, artist2Node, _artistNetwork);
+                Console.WriteLine($"TRYING TO TRAVEL BETWEEN {artist1Node.Name} and {artist2Node.Name}");
                 foreach (string id in traveller.Path.Select(a => a.SpotifyId).ToList())
                 {
                     Console.WriteLine(id);
@@ -136,7 +139,7 @@ namespace NettspendToSautiSol
         {
             try
             {
-                bool exists = _database.DoesArtistExist(artistName);
+                bool exists = _database.IsArtistInDbByName(artistName);
                 return Ok(new { ArtistExist = exists });
             }
             catch (Exception ex)
@@ -203,7 +206,7 @@ namespace NettspendToSautiSol
         {
             try
             {
-                var artists = _database.GetAllArtists();
+                var artists = _database.GetAllArtistNodesInDb();
                 return Ok(new { 
                     Artists = artists.Select(a => new {
                         name = a.Name,

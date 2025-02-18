@@ -41,7 +41,7 @@ public class Traveller
             if (currentArtist.Name == EndArtistNode.Name)
                 break;
 
-            foreach (ArtistEdge connection in ArtistNetwork.GetListOfConnections(currentArtist))
+            foreach (ArtistConnection connection in ArtistNetwork.GetListOfConnections(currentArtist))
             {
                 ArtistNode neighbor = connection.Node2;
                 double newDist = currentDistance + connection.Weight;
