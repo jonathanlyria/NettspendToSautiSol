@@ -1,7 +1,7 @@
 ﻿// Citation of 
 
 const input = document.getElementById('input');
-const output = document.getElementById('output');
+const output = document.getElementById('output-box');
 let headerTitle = document.getElementById('header-title');
 
 let pkceToken = null;

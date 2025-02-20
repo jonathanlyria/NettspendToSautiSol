@@ -97,11 +97,6 @@ namespace NettspendToSautiSol
                 
                 LastFmData similarArtistLastFmData = new LastFmData(similarArtistName);
                 List<string> lastFmTopTracks = similarArtistLastFmData.GetTopTracks();
-                foreach (var topTrack in lastFmTopTracks)
-                {
-                    Console.WriteLine($"{similarArtistName} - {topTrack}");
-                }
-                
                 if (!similarArtistLastFmData.isLastFmDataValid)
                 {
                     Console.WriteLine($"{startingArtistNode.Name} last fm data is not valid, {startingArtistLastFmData.lastFmDataInvalidReason}");

@@ -25,13 +25,14 @@ public class DatabaseManager
             string createArtistTableQuery = @"
                 CREATE TABLE IF NOT EXISTS Artist (
                     ArtistName TEXT NOT NULL PRIMARY KEY,
-                    SpotifyID TEXT NOT NULL,
+                    SpotifyId TEXT NOT NULL,
                     Expanded BIT NOT NULL
                 );";
             using (SqliteCommand cmd = new SqliteCommand(createArtistTableQuery, connection))
             {
                 cmd.ExecuteNonQuery();
             }
+            
 
             string createConnectionsTableQuery = @"
                 CREATE TABLE IF NOT EXISTS Connections (

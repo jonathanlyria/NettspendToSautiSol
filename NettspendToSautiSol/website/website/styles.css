@@ -1,13 +1,9 @@
 ﻿body {
-    margin: 0;
-    padding: 20px;
-    background-color: black;
+    background-color: #212121;
     color: white;
     font-family: "Gotham-Medium", monospace;
     font-size: clamp(1.5rem, 2vw, 2rem);
 }
-
-
 
 @font-face {
     font-family: 'Gotham';
@@ -16,117 +12,168 @@
     font-style: normal;
 }
 
-#console {
+#container {
     display: flex;
+    background-color: #212121;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 50vh;
     width: 100%;
 }
 
-#output {
+#viewartists-container {
+    display: flex;
+    background-color: #212121;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 90%;
+    width: 100%;
+}
+
+#output-box {
     width: 100%;
     max-width: 600px;
-    min-height: 300px;
-    background: black;
+    min-height: 20vh;
     color: white;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
-    padding: 10px;
     overflow-y: auto;
     position: relative;
-    border: 1px solid black;
+    border: 1px;
 }
 
-#navigation {
-    position: sticky;
-    top: -10px;
-    right: -10px;
+#navigation{
     display: flex;
-    gap: 10px;
+    align-items: center; /* Vertically centers content */
+    justify-content: space-between; /* Keeps elements spaced */
+    width: 100%;
+    border-radius: 8px;
 }
 
-#navigation a {
+#github-logo {
+    position: relative;
+    display: inline-block;
+    margin-left: 1%;
+    width: 50px; /* Ensure container matches image size */
+    height: 50px;
+}
+
+#github-logo img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: opacity 0.3s ease;
+}
+
+#github-logo .hover-logo {
+    opacity: 0;
+}
+
+#github-logo:hover .hover-logo {
+    opacity: 1;
+}
+
+#github-logo:hover .default-logo {
+    opacity: 0;
+}
+
+#navigation-buttons {
+    display: flex;
+    width: 100%;
+    padding-right: 1%;
+    justify-content: flex-end; 
+}
+
+#navigation-buttons a {
     color: #1DB954;
     text-decoration: none;
     font-family: "Gotham-Medium", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
-    padding: 5px 10px;
-    transition: background-color 0.3s, color 0.3s;
-    border: 1px solid black;
+    transition: color 0.3s;
+    padding: 1%;
+    border-radius: 8px;
 }
 
-#navigation a:hover {
-    background-color: #1DB954;
-    color: black;
+#navigation-buttons a:hover {
+    color: white;
+    border-radius: 8px;
 }
 
-#navigation a:focus {
+#navigation-buttons a:focus {
     outline: none;
 }
 
-#input, #artist-name {
+#input{
     color: #1DB954;
-    background: black;
+    background-color: #212121;
     outline: none;
     width: 100%;
     max-width: 600px;
     font-family: "Gotham-Medium", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
-    border: 1px solid black; /* Invisible border */
-    padding: 10px;
-}
-
-.terminal-modal {
-    position: fixed;
-    width: 100%;
-    max-width: 600px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: black;
-    color: white;
+    border: 1px;
     padding: 20px;
-    font-family: "Gotham-Medium", monospace;
-    border: 1px solid #1DB954; 
 }
 
-.terminal-content {
+.modal {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background-color: #121212;
+    padding: 1%;
+    border-radius: 10px;
+    text-align: left;
+    width: 400px;
 }
 
 .modal-title {
-    color: #1DB954;
-    margin: 0;
-    font-size: clamp(1.5rem, 2vw, 2rem);
+    color: white;
+    font-size: 1.5rem;
+    padding: 1%;
 }
 
-textarea {
-    width: 100%;
-    background-color: black;
+textarea{
+    width: 95%;
+    background-color: #121212;
     color: white;
-    padding: 10px;
+    padding: 1%;
     font-family: "Gotham-Medium", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     resize: none;
-    border: 1px solid black; /* Invisible border */
+    border: 1px;
+    text-align: left;
+    border-radius: 5px;
+    margin-bottom: 10px;
 }
 
 button {
-    background: black;
+    background: #121212;
     color: #1DB954;
-    padding: 5px 10px;
+    padding: 1%;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
     font-family: "Gotham-Medium", monospace;
-    border: 1px solid black; /* Invisible border */
+    border: 1px; /* Invisible border */
+    border-radius: 8px; /* Rounded corners */
 }
 
 button:hover {
-    background: #1DB954;
-    color: black;
+    background-color: #212121;
+    color: white;
+    border-radius: 8px; /* Ensure corners stay rounded on hover */
 }
 
 .error {
@@ -142,25 +189,11 @@ button:hover {
 #header-title {
     position: sticky;
     text-align: center;
-    margin: 100px 0;
+    margin: 40px 0;
     font-size: 2em;
     font-family: "Gotham-Medium", monospace;
     color: white;
-    border: 1px solid black;
-}
-
-.request-artist, .report-issue {
-    font-family: "Gotham-Medium", monospace;
-    font-size: clamp(1rem, 1.5vw, 1.5rem);
-    padding: 5px 10px;
-    background: black;
-    color: #1DB954;
-    border: 1px solid black; /* Invisible border */
-}
-
-.request-artist:hover, .report-issue:hover {
-    background: #1DB954;
-    color: black;
+    border: 1px;
 }
 
 .console-item {
@@ -193,23 +226,13 @@ button:hover {
     border-color: #1DB954;
 }
 
-@keyframes terminalEntry {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 .loading {
     color: #1DB954;
     padding: 20px;
     font-family: "Gotham-Medium", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
 }
+
 .artist-item {
     padding: 15px 0;
     border-bottom: 1px solid rgba(29, 185, 84, 0.1);
@@ -227,12 +250,12 @@ button:hover {
     color: #1DB954;
     text-decoration: none;
     padding: 5px 10px;
+    border-radius: 8px;
     transition: background-color 0.3s, color 0.3s;
 }
 
 .spotify-link:hover {
-    background-color: #1DB954;
-    color: black;
+    color: white;
 }
 
 #loading {

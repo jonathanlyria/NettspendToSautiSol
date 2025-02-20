@@ -46,6 +46,7 @@ namespace NettspendToSautiSol
                 ArtistNode artist2Node = new ArtistNode(artist2, _database.GetIdFromName(artist2));
                 Console.WriteLine(_database.GetIdFromName(artist2));
                 Console.WriteLine($"b4 traveller");
+                _artistNetwork.DisplayAllConnections();
 
                 Traveller traveller = new Traveller(artist1Node, artist2Node, _artistNetwork);
                 Console.WriteLine($"TRYING TO TRAVEL BETWEEN {artist1Node.Name} and {artist2Node.Name}");

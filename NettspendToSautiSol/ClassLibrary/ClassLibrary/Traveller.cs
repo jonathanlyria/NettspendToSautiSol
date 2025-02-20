@@ -23,7 +23,7 @@ public class Traveller
         PriorityQueue<ArtistNode, double> priorityQueue = new PriorityQueue<ArtistNode, double>();
         Dictionary<ArtistNode, double> distances = new Dictionary<ArtistNode, double>();
         Dictionary<ArtistNode, ArtistNode> previous = new Dictionary<ArtistNode, ArtistNode>();
-
+        
         foreach (ArtistNode artist in ArtistNetwork.AdjacencyMatrix.Keys)
         {
             distances[artist] = double.MaxValue;

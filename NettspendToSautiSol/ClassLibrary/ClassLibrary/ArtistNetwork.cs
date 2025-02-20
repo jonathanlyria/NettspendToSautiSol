@@ -8,7 +8,6 @@ namespace NettspendToSautiSol
         {
             AdjacencyMatrix = new Dictionary<ArtistNode, List<ArtistConnection>>();
             _databaseManager = databaseManager;
-            LoadNetwork();
         }
         public void LoadNetwork()
         {
@@ -22,11 +21,13 @@ namespace NettspendToSautiSol
             List<ArtistNode> allArtists = _databaseManager.GetAllArtistNodesInDb();
             foreach (ArtistNode artist in allArtists)
             {
+                Console.WriteLine(artist.Name);
                 AddNode(artist);
             }
             List<ArtistConnection> edges = _databaseManager.GetAllConnectionsInDb();
             foreach (ArtistConnection edge in edges)
             {
+                Console.WriteLine($"{edge.Node1.Name} -> {edge.Node2.Name} {edge.Weight}");
                 AddConnection(edge.Node1, edge.Node2, (1-edge.Weight));
             }
         }
@@ -59,6 +60,19 @@ namespace NettspendToSautiSol
 
             return AdjacencyMatrix[node].ToList();
         }
+        public void DisplayAllConnections()
+        {
+            Console.WriteLine("All Artist Connections in the Network:");
+            foreach (var kvp in AdjacencyMatrix)
+            {
+                ArtistNode artist = kvp.Key;
+                foreach (ArtistConnection connection in kvp.Value)
+                {
+                    Console.WriteLine($"{artist.Name} -> {connection.Node2.Name} (Weight: {connection.Weight})");
+                }
+            }
+        }
+
         
     }
 }
