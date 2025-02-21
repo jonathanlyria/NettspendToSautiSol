@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.Data.Sqlite; //cite******************
 
 namespace NettspendToSautiSol;
@@ -308,6 +309,37 @@ public class DatabaseManager
                 cmd.Parameters.AddWithValue("@artistName2", artistName2);
                 cmd.Parameters.AddWithValue("@strength", strength);
                 cmd.ExecuteNonQuery();
+            }
+        }
+
+    }
+
+    public Dictionary<ArtistNode, > GetConnectedArtistsArray()
+    {
+        using (SqliteConnection connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+            string selectQuery = @"
+                SELECT a.ArtistName, 
+                       GROUP_CONCAT(DISTINCT CASE 
+                                               WHEN c.ArtistName1 = a.ArtistName THEN c.ArtistName2 
+                                               ELSE c.ArtistName1 
+                                             END) AS ConnectedArtistsArray, 
+                       a.SpotifyId
+                FROM Artist a
+                JOIN Connections c ON a.ArtistName = c.ArtistName1 OR a.ArtistName = c.ArtistName2
+                GROUP BY a.ArtistName, a.SpotifyId;
+            ";
+            using (SqliteCommand cmd = new SqliteCommand(selectQuery, connection))
+            {
+                using (SqliteDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        
+                    }
+                    
+                }
             }
         }
     }

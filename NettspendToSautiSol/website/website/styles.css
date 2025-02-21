@@ -18,7 +18,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 50vh;
+    height: 60vh;
     width: 100%;
 }
 
@@ -34,13 +34,12 @@
 
 #output-box {
     width: 100%;
-    max-width: 600px;
+    max-width: 800px;
     min-height: 20vh;
     color: white;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     overflow-y: auto;
     position: relative;
-    border: 1px;
 }
 
 #navigation{
@@ -67,15 +66,15 @@
 }
 
 #github-logo .hover-logo {
-    opacity: 0;
-}
-
-#github-logo:hover .hover-logo {
     opacity: 1;
 }
 
-#github-logo:hover .default-logo {
+#github-logo:hover .hover-logo {
     opacity: 0;
+}
+
+#github-logo:hover .default-logo {
+    opacity: 1;
 }
 
 #navigation-buttons {
@@ -109,11 +108,11 @@
     background-color: #212121;
     outline: none;
     width: 100%;
-    max-width: 600px;
+    max-width: 800px;
     font-family: "Gotham-Medium", monospace;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     border: 1px;
-    padding: 20px;
+    padding-top: 20px;
 }
 
 .modal {
