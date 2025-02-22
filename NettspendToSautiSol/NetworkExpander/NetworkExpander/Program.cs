@@ -11,7 +11,7 @@ namespace NettspendToSautiSol
                @"/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/NetworkExpander/NetworkExpander/database.db";
             DatabaseManager databaseManager = new DatabaseManager(databasePath);
             NetworkExpander artistExpander = new NetworkExpander(databaseManager);
-            artistExpander.Expand();
+            artistExpander.SearchForArtists();
         }
     }
 }

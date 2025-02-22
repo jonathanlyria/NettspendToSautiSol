@@ -8,8 +8,6 @@ namespace NettspendToSautiSol
     public class PlaylistRequest
     {
         public List<string> Path { get; set; }
-        public bool LookForFeatures { get; set; }
-        public int TracksPerArtist { get; set; }
         public string PkceToken { get; set; }
     }
     
@@ -48,7 +46,7 @@ namespace NettspendToSautiSol
                 Console.WriteLine($"b4 traveller");
                 _artistNetwork.DisplayAllConnections();
 
-                Traveller traveller = new Traveller(artist1Node, artist2Node, _artistNetwork);
+                NetworkTraveller traveller = new NetworkTraveller(artist1Node, artist2Node, _artistNetwork);
                 Console.WriteLine($"TRYING TO TRAVEL BETWEEN {artist1Node.Name} and {artist2Node.Name}");
                 foreach (string id in traveller.Path.Select(a => a.SpotifyId).ToList())
                 {
@@ -119,8 +117,6 @@ namespace NettspendToSautiSol
 
                 PlaylistCreator playlistCreator = new PlaylistCreator(
                     artists,
-                    request.TracksPerArtist,
-                    request.LookForFeatures,
                     request.PkceToken
                 );
 

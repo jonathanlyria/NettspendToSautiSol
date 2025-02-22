@@ -1,6 +1,6 @@
 namespace NettspendToSautiSol;
 // Citation on Dijktras Algorithm
-public class Traveller
+public class NetworkTraveller
 {
     public ArtistNode StartArtistNode { get; set; }
     public ArtistNode EndArtistNode { get; set; }
@@ -8,17 +8,17 @@ public class Traveller
     public double Cost { get; set; }
     private ArtistNetwork ArtistNetwork { get; set; }
 
-    public Traveller(ArtistNode startArtistNode, ArtistNode endArtistNode, ArtistNetwork artistNetwork)
+    public NetworkTraveller(ArtistNode startArtistNode, ArtistNode endArtistNode, ArtistNetwork artistNetwork)
     {
         StartArtistNode = startArtistNode;
         EndArtistNode = endArtistNode;
         ArtistNetwork = artistNetwork;
         Path = new List<ArtistNode>();
         Cost = double.MaxValue;
-        Traverse();
+        FindPathWithDijkstras();
     }
     
-    public void Traverse()
+    public void FindPathWithDijkstras()
     {
         PriorityQueue<ArtistNode, double> priorityQueue = new PriorityQueue<ArtistNode, double>();
         Dictionary<ArtistNode, double> distances = new Dictionary<ArtistNode, double>();

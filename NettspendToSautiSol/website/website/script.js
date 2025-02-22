@@ -192,8 +192,6 @@ async function createPlaylist() {
         appendOutput("Creating playlist...");
         const requestBody = {
             Path: pathIds,
-            LookForFeatures: true,
-            TracksPerArtist: 3,
             PkceToken: pkceToken,
         };
         console.log("Request body:", requestBody);

@@ -51,7 +51,7 @@ namespace NettspendToSautiSol
                 DateTime.UtcNow.AddSeconds(_spotifyClientCredentials.GetAccessTokenAsync().Result.ExpiresIn);
         }
 
-        public void Expand()
+        public void SearchForArtists()
         {
             int callCount = 0;
             int level = 0;
@@ -118,7 +118,7 @@ namespace NettspendToSautiSol
                 string name = spotifyData.Name;
                 int popularity = (int)spotifyData.Popularity;
                 
-                if (_databaseManager.IsArtistInDbById(spotifyId) && _databaseManager.DoesConnectionExistInDb(name, startingArtistNode.Name))
+                if (_databaseManager.IsArtistInDbById(spotifyId) && _databaseManager.DoesConnectionExistInDb(spotifyId, startingArtistNode.SpotifyId))
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"{name} is in database and connection exists for {name} -> {startingArtistNode.Name}");
@@ -130,7 +130,7 @@ namespace NettspendToSautiSol
             
                 if (_databaseManager.IsArtistInDbById(spotifyId))
                 {
-                    _databaseManager.AddConnectionToDb(startingArtistNode.Name, name, similarArtistWeight);
+                    _databaseManager.AddConnectionToDb(startingArtistNode.SpotifyId, spotifyId, similarArtistWeight);
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"Adding new connection between {startingArtistNode.Name} and {name} as the Spotify ID exists in database");
                     Console.WriteLine($"Total calls: {_totalCalls++}");
@@ -139,7 +139,7 @@ namespace NettspendToSautiSol
                 }
             
                 _databaseManager.AddArtistToDb(name, spotifyId);
-                _databaseManager.AddConnectionToDb(startingArtistNode.Name, name, similarArtistWeight);
+                _databaseManager.AddConnectionToDb(startingArtistNode.SpotifyId, spotifyId, similarArtistWeight);
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"Added {name} to the database and added a new connection between {startingArtistNode.Name} and {name}");
@@ -155,7 +155,7 @@ namespace NettspendToSautiSol
         
         private async Task RefreshAccessToken()
         {
-            if (DateTime.UtcNow >= _tokenExpiryTime)
+            if (DateTime.UtcNow >= _tokenExpiryTime + TimeSpan.FromMinutes(1))
             {
                 try
                 {

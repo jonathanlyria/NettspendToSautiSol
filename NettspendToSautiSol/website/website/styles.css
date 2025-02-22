@@ -1,5 +1,5 @@
 ﻿body {
-    background-color: #212121;
+    background-color: #121212;
     color: white;
     font-family: "Gotham-Medium", monospace;
     font-size: clamp(1.5rem, 2vw, 2rem);
@@ -14,7 +14,7 @@
 
 #container {
     display: flex;
-    background-color: #212121;
+    background-color: #121212;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -24,7 +24,7 @@
 
 #viewartists-container {
     display: flex;
-    background-color: #212121;
+    background-color: #121212;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -105,7 +105,7 @@
 
 #input{
     color: #1DB954;
-    background-color: #212121;
+    background-color: #121212;
     outline: none;
     width: 100%;
     max-width: 800px;
@@ -170,7 +170,7 @@ button {
 }
 
 button:hover {
-    background-color: #212121;
+    background-color: #121212;
     color: white;
     border-radius: 8px; /* Ensure corners stay rounded on hover */
 }

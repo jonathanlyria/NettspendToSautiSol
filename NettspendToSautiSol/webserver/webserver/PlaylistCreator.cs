@@ -7,20 +7,16 @@ namespace NettspendToSautiSol
 {
     public class PlaylistCreator
     {
-        private readonly List<ArtistNode> _artists;
-        private readonly int _tracksPerArtist;
-        private readonly bool _lookForFeatures;
+        private readonly List<ArtistNode> _pathOfArtists;
         private SpotifyAuthorizer _spotifyAuthorizer;
         private List<string> _songs;
         private readonly string _accessToken;
         private string playlistId;
         
-        public PlaylistCreator(List<ArtistNode> artists, int tracksPerArtist, bool lookForFeatures, string _pkceToken)
+        public PlaylistCreator(List<ArtistNode> pathOfArtists, string _pkceToken)
         {
-            _lookForFeatures = lookForFeatures;
             _songs = new List<string>();
-            _artists = artists;
-            _tracksPerArtist = tracksPerArtist;
+            _pathOfArtists = pathOfArtists;
             _accessToken = _pkceToken;
             CreatePlaylist();
         }
@@ -31,27 +27,27 @@ namespace NettspendToSautiSol
             List<string> tracks = new List<string>();
             List<int> songsPerArtist = new List<int>();
 
-            for (int i = 0; i < _artists.Count(); i++)
+            for (int i = 0; i < _pathOfArtists.Count(); i++)
             {
-                songsPerArtist.Add(_tracksPerArtist);
+                songsPerArtist.Add(3);
             }
 
-            for (int i = 0; i < _artists.Count(); i++)
+            for (int i = 0; i < _pathOfArtists.Count(); i++)
             {
-                string? feature = FindFeature(_artists[i], _artists[i]);
-                if (_lookForFeatures && i + 1 < _artists.Count() && FindFeature(_artists[i], _artists[i + 1]) != null)
+                string? feature = FindFeature(_pathOfArtists[i], _pathOfArtists[i]);
+                if (i + 1 < _pathOfArtists.Count() && FindFeature(_pathOfArtists[i], _pathOfArtists[i + 1]) != null)
                 {
                     songsPerArtist[i]--;
                     songsPerArtist[i + 1]--;
-                    foreach (string song in FindSongsForArtist(_artists[i], songsPerArtist[i]))
+                    foreach (string song in FindSongsForArtist(_pathOfArtists[i], songsPerArtist[i]))
                     {
                         tracks.Add(song);
                     }
-                    tracks.Add(FindFeature(_artists[i], _artists[i + 1]));
+                    tracks.Add(FindFeature(_pathOfArtists[i], _pathOfArtists[i + 1]));
                 }
                 else
                 {
-                    foreach (string song in FindSongsForArtist(_artists[i], songsPerArtist[i]))
+                    foreach (string song in FindSongsForArtist(_pathOfArtists[i], songsPerArtist[i]))
                     {
                         tracks.Add(song);
                     }
@@ -75,9 +71,9 @@ namespace NettspendToSautiSol
 
                 var payload = new
                 {
-                    name = $"from {_artists.First().Name} to {_artists.Last().Name}",
+                    name = $"from {_pathOfArtists.First().Name} to {_pathOfArtists.Last().Name}",
                     description = $"tool created by,  creates a playlist that transitions between" +
-                                  $" {_artists.First().Name} and {_artists.First().Name}.",
+                                  $" {_pathOfArtists.First().Name} and {_pathOfArtists.First().Name}.",
                     @public = true
                 };
 

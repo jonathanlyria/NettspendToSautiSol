@@ -25,8 +25,8 @@ public class DatabaseManager
 
             string createArtistTableQuery = @"
                 CREATE TABLE IF NOT EXISTS Artist (
-                    ArtistName TEXT NOT NULL PRIMARY KEY,
-                    SpotifyId TEXT NOT NULL,
+                    SpotifyId TEXT NOT NULL PRIMARY KEY,
+                    ArtistName TEXT NOT NULL,
                     Expanded BIT NOT NULL
                 );";
             using (SqliteCommand cmd = new SqliteCommand(createArtistTableQuery, connection))
@@ -38,8 +38,8 @@ public class DatabaseManager
             string createConnectionsTableQuery = @"
                 CREATE TABLE IF NOT EXISTS Connections (
                     ConnectionID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    ArtistName1 TEXT NOT NULL,
-                    ArtistName2 TEXT NOT NULL,
+                    SpotifyId1 TEXT NOT NULL,
+                    SpotifyId2 TEXT NOT NULL,
                     ConnectionStrength REAL NOT NULL
                 );";
             using (SqliteCommand cmd = new SqliteCommand(createConnectionsTableQuery, connection))
@@ -73,8 +73,10 @@ public class DatabaseManager
             }
         }
     }
+    
+    //change usage
 
-    public bool DoesConnectionExistInDb(string artistName1, string artistName2)
+    public bool DoesConnectionExistInDb(string spotifyId1, string spotifyId2)
     {
         using SqliteConnection connection = new SqliteConnection(_connectionString);
         {
@@ -82,13 +84,13 @@ public class DatabaseManager
 
             string selectQuery = @"
                 SELECT * FROM Connections
-                WHERE (ArtistName1 = @artistName1 AND ArtistName2 = @artistName2)
-                OR (ArtistName1 = @artistName2 AND ArtistName2 = @artistName1);";
+                WHERE (SpotifyId1 = @spotifyId1 AND SpotifyId2 = @spotifyId2)
+                OR (SpotifyId1 = @spotifyId2 AND SpotifyId2 = @spotifyId1);";
 
             using (SqliteCommand cmd = new SqliteCommand(selectQuery, connection))
             {
-                cmd.Parameters.AddWithValue("@artistName1", artistName1);
-                cmd.Parameters.AddWithValue("@artistName2", artistName2);
+                cmd.Parameters.AddWithValue("@spotifyId1", spotifyId1);
+                cmd.Parameters.AddWithValue("@spotifyId2", spotifyId2);
                 using (SqliteDataReader reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
@@ -126,15 +128,15 @@ public class DatabaseManager
         {
             connection.Open();
 
-            string selectQuery = "SELECT ArtistName, SpotifyId, Expanded FROM Artist;";
+            string selectQuery = "SELECT SpotifyId, ArtistName, Expanded FROM Artist;";
             using (SqliteCommand cmd = new SqliteCommand(selectQuery, connection))
             {
                 using (SqliteDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        string artistName = reader.GetString(0);
-                        string spotifyId = reader.GetString(1);
+                        string spotifyId = reader.GetString(0);
+                        string artistName = reader.GetString(1);
                         artists.Add(new ArtistNode(artistName, spotifyId));
                     }
                 }
@@ -214,7 +216,6 @@ public class DatabaseManager
         }
         return name;
     }
-    
     public List<ArtistConnection> GetAllConnectionsInDb()
     {
         List<ArtistConnection> connections = new List<ArtistConnection>();
@@ -224,8 +225,11 @@ public class DatabaseManager
             connection.Open();
 
             string selectQuery = @"
-               SELECT ArtistName1, ArtistName2, ConnectionStrength
-               FROM Connections";
+            SELECT a1.ArtistName, c.SpotifyId1, a2.ArtistName, c.SpotifyId2, c.ConnectionStrength
+            FROM Connections c
+            JOIN Artist a1 ON c.SpotifyId1 = a1.SpotifyId
+            JOIN Artist a2 ON c.SpotifyId2 = a2.SpotifyId";
+
             using (SqliteCommand cmd = new SqliteCommand(selectQuery, connection))
             {
                 using (SqliteDataReader reader = cmd.ExecuteReader())
@@ -233,15 +237,15 @@ public class DatabaseManager
                     while (reader.Read())
                     {
                         string artistName1 = reader.GetString(0);
-                        string artistId1 = GetIdFromName(artistName1);
-                        string artistName2 = reader.GetString(1);
-                        string artistId2 = GetIdFromName(artistName2);
-                        double strength = reader.GetDouble(2);
-                        ArtistNode artist1 = new ArtistNode(artistName1, artistId1);
-                        ArtistNode artist2 = new ArtistNode(artistName2, artistId2);
+                        string spotifyId1 = reader.GetString(1);
+                        string artistName2 = reader.GetString(2);
+                        string spotifyId2 = reader.GetString(3);
+                        double strength = reader.GetDouble(4);
+
+                        ArtistNode artist1 = new ArtistNode(artistName1, spotifyId1);
+                        ArtistNode artist2 = new ArtistNode(artistName2, spotifyId2);
 
                         connections.Add(new ArtistConnection(artist1, artist2, strength));
-
                     }
                 }
             }
@@ -249,6 +253,7 @@ public class DatabaseManager
 
         return connections;
     }
+
 
     public Queue<ArtistNode>? GetExpanderQueueFromDb()
     {
@@ -294,19 +299,19 @@ public class DatabaseManager
         }
     }
 
-    public void AddConnectionToDb(string artistName1, string artistName2, double strength)
+    public void AddConnectionToDb(string spotifyId1, string spotifyId2, double strength)
     {
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
 
             string insertQuery = @"
-                INSERT INTO Connections (ArtistName1, ArtistName2, ConnectionStrength)
-                VALUES (@artistName1, @artistName2, @strength);";
+                INSERT INTO Connections (SpotifyId1, SpotifyId2, ConnectionStrength)
+                VALUES (@spotifyId1, @spotifyId2, @strength);";
             using (SqliteCommand cmd = new SqliteCommand(insertQuery, connection))
             {
-                cmd.Parameters.AddWithValue("@artistName1", artistName1);
-                cmd.Parameters.AddWithValue("@artistName2", artistName2);
+                cmd.Parameters.AddWithValue("@spotifyId1", spotifyId1);
+                cmd.Parameters.AddWithValue("@spotifyId2", spotifyId2);
                 cmd.Parameters.AddWithValue("@strength", strength);
                 cmd.ExecuteNonQuery();
             }
@@ -314,33 +319,65 @@ public class DatabaseManager
 
     }
 
-    public Dictionary<ArtistNode, > GetConnectedArtistsArray()
+    public Dictionary<ArtistNode, List<ArtistNode>> GetArtistAndListOfConnections()
     {
+        Dictionary<ArtistNode, List<ArtistNode>> artistConnections = new Dictionary<ArtistNode, List<ArtistNode>>();
+
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
             string selectQuery = @"
                 SELECT a.ArtistName, 
+                       a.SpotifyId, 
                        GROUP_CONCAT(DISTINCT CASE 
-                                               WHEN c.ArtistName1 = a.ArtistName THEN c.ArtistName2 
-                                               ELSE c.ArtistName1 
-                                             END) AS ConnectedArtistsArray, 
-                       a.SpotifyId
+                                               WHEN c.SpotifyId1 = a.SpotifyId THEN c.SpotifyId2 
+                                               ELSE c.SpotifyId1 
+                                             END) AS ConnectedSpotifyIds
                 FROM Artist a
-                JOIN Connections c ON a.ArtistName = c.ArtistName1 OR a.ArtistName = c.ArtistName2
+                JOIN Connections c ON a.SpotifyId = c.SpotifyId1 OR a.SpotifyId = c.SpotifyId2
                 GROUP BY a.ArtistName, a.SpotifyId;
             ";
+
             using (SqliteCommand cmd = new SqliteCommand(selectQuery, connection))
             {
                 using (SqliteDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        
+                        string artistName = reader.GetString(0);
+                        string artistSpotifyId = reader.GetString(1);
+                        string connectedSpotifyIds = reader.IsDBNull(2) ? "" : reader.GetString(2);
+
+                        ArtistNode artistNode = new ArtistNode(artistName, artistSpotifyId);
+                        List<ArtistNode> connectedArtists = new List<ArtistNode>();
+
+                        if (!string.IsNullOrEmpty(connectedSpotifyIds))
+                        {
+                            string[] spotifyIds = connectedSpotifyIds.Split(',');
+
+                            foreach (string connectedId in spotifyIds)
+                            {
+                                string connectedNameQuery = "SELECT ArtistName FROM Artist WHERE SpotifyId = @SpotifyId";
+                                using (SqliteCommand nameCmd = new SqliteCommand(connectedNameQuery, connection))
+                                {
+                                    nameCmd.Parameters.AddWithValue("@SpotifyId", connectedId);
+                                    string connectedArtistName = nameCmd.ExecuteScalar()?.ToString();
+
+                                    if (!string.IsNullOrEmpty(connectedArtistName))
+                                    {
+                                        connectedArtists.Add(new ArtistNode(connectedArtistName, connectedId));
+                                    }
+                                }
+                            }
+                        }
+
+                        artistConnections[artistNode] = connectedArtists;
                     }
-                    
                 }
             }
         }
+
+        return artistConnections;
     }
+
 }
