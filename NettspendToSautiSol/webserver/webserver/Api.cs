@@ -20,58 +20,18 @@ namespace NettspendToSautiSol
 
     [ApiController]
     [Route("api")]
-    public class Api : ControllerBase
+    public class Api(
+        ArtistNetwork artistNetwork,
+        SpotifyAuthorizeWithPKCEAuthenticator spotifyAuthorizeWithPkceAuthenticator)
+        : ControllerBase
     {
-        private readonly DatabaseManager _database;
-        private readonly ArtistNetwork _artistNetwork;
-        private readonly SpotifyAuthorizer _spotifyAuthorizer;
-
-        public Api(DatabaseManager database, ArtistNetwork artistNetwork, SpotifyAuthorizer spotifyAuthorizer)
-        {
-            _database = database;
-            _artistNetwork = artistNetwork;
-            _spotifyAuthorizer = spotifyAuthorizer;
-        }
-
-        [HttpGet("find-path")]
-        public IActionResult FindPath([FromQuery] string artist1, [FromQuery] string artist2)
-        {
-            try
-            {
-                Console.WriteLine("Finding path from " + artist1 + " to " + artist2);
-                ArtistNode artist1Node = new ArtistNode(artist1, _database.GetIdFromName(artist1));
-                Console.WriteLine(_database.GetIdFromName(artist1));
-                ArtistNode artist2Node = new ArtistNode(artist2, _database.GetIdFromName(artist2));
-                Console.WriteLine(_database.GetIdFromName(artist2));
-                Console.WriteLine($"b4 traveller");
-                _artistNetwork.DisplayAllConnections();
-
-                NetworkTraveller traveller = new NetworkTraveller(artist1Node, artist2Node, _artistNetwork);
-                Console.WriteLine($"TRYING TO TRAVEL BETWEEN {artist1Node.Name} and {artist2Node.Name}");
-                foreach (string id in traveller.Path.Select(a => a.SpotifyId).ToList())
-                {
-                    Console.WriteLine(id);
-                }
-                
-                return Ok(new
-                {
-                    PathId = traveller.Path.Select(a => a.SpotifyId).ToList(),
-                    PathName = traveller.Path.Select(a => a.Name).ToList(),
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Error = "An error occurred while finding the path." });
-            }
-        }
-
-
+        
         [HttpGet("authenticate-user")]
         public IActionResult Authenticate()
         {
             try
             {
-                (string authUrl, string state) = _spotifyAuthorizer.GetAuthorizationUrl();
+                (string authUrl, string state) = spotifyAuthorizeWithPkceAuthenticator.GetAuthorizationUrl();
                 return Ok(new { AuthUrl = authUrl, State = state });
             }
             catch (Exception ex)
@@ -85,7 +45,7 @@ namespace NettspendToSautiSol
         {
             try
             {
-                string accessToken = _spotifyAuthorizer.ExchangeCode(request.Code, request.State);
+                string accessToken = spotifyAuthorizeWithPkceAuthenticator.ExchangeCode(request.Code, request.State);
                 return Ok(new { PkceToken = accessToken });
             }
             catch (Exception ex)
@@ -96,6 +56,39 @@ namespace NettspendToSautiSol
                 });
             }
         }
+        
+        [HttpGet("find-path")]
+        public IActionResult FindPath([FromQuery] string artist1, [FromQuery] string artist2)
+        {
+            try
+            {
+                Console.WriteLine("Finding path from " + artist1 + " to " + artist2);
+                ArtistNode artist1Node = new ArtistNode(artist1, ArtistNetworkDatabaseManager.GetIdFromName(artist1));
+                Console.WriteLine(ArtistNetworkDatabaseManager.GetIdFromName(artist1));
+                ArtistNode artist2Node = new ArtistNode(artist2, ArtistNetworkDatabaseManager.GetIdFromName(artist2));
+                Console.WriteLine(ArtistNetworkDatabaseManager.GetIdFromName(artist2));
+                Console.WriteLine($"b4 pathFinder");
+                artistNetwork.DisplayAllConnections();
+
+                List<ArtistNode> path = artistNetwork.FindPathWithDijkstras(artist1Node, artist2Node);
+                Console.WriteLine($"TRYING TO TRAVEL BETWEEN {artist1Node.Name} and {artist2Node.Name}");
+                foreach (string id in path.Select(a => a.SpotifyId).ToList())
+                {
+                    Console.WriteLine(id);
+                }
+                
+                return Ok(new
+                {
+                    PathId = path.Select(a => a.SpotifyId).ToList(),
+                    PathName = path.Select(a => a.Name).ToList(),
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "An error occurred while finding the path." });
+            }
+        }
+
 
         [HttpPost("create-playlist")]
         public IActionResult CreatePlaylist([FromBody] PlaylistRequest request)
@@ -111,7 +104,7 @@ namespace NettspendToSautiSol
 
                 foreach (string spotifyId in request.Path)
                 {
-                    string artistName = _database.GetNameFromId(spotifyId);
+                    string artistName = ArtistNetworkDatabaseManager.GetNameFromId(spotifyId);
                     artists.Add(new ArtistNode(artistName, spotifyId));
                 }
 
@@ -136,7 +129,7 @@ namespace NettspendToSautiSol
         {
             try
             {
-                bool exists = _database.IsArtistInDbByName(artistName);
+                bool exists = ArtistNetworkDatabaseManager.IsArtistInDbByName(artistName);
                 return Ok(new { ArtistExist = exists });
             }
             catch (Exception ex)
@@ -203,7 +196,7 @@ namespace NettspendToSautiSol
         {
             try
             {
-                var artists = _database.GetAllArtistNodesInDb();
+                var artists = ArtistNetworkDatabaseManager.GetAllArtistNodes();
                 return Ok(new { 
                     Artists = artists.Select(a => new {
                         name = a.Name,

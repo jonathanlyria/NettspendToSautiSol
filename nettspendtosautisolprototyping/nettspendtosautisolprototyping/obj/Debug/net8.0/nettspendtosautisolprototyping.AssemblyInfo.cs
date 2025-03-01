@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("nettspendtosautisolprototyping")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+704a28d1472b230ec13f22ca01a978846d0fe818")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dc1f5e1cd6d94ed74e2121439d2eda0da2b9cc41")]
 [assembly: System.Reflection.AssemblyProductAttribute("nettspendtosautisolprototyping")]
 [assembly: System.Reflection.AssemblyTitleAttribute("nettspendtosautisolprototyping")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

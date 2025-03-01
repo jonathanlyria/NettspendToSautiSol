@@ -4,14 +4,14 @@
     "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/NetworkExpander/NetworkExpander/NetworkExpander.csproj": {}
   },
   "projects": {
-    "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ClassLibrary/ClassLibrary/ClassLibrary.csproj": {
+    "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ArtistNetwork/ArtistNetwork/ArtistNetwork.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ClassLibrary/ClassLibrary/ClassLibrary.csproj",
-        "projectName": "ClassLibrary",
-        "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ClassLibrary/ClassLibrary/ClassLibrary.csproj",
+        "projectUniqueName": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ArtistNetwork/ArtistNetwork/ArtistNetwork.csproj",
+        "projectName": "ArtistNetwork",
+        "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ArtistNetwork/ArtistNetwork/ArtistNetwork.csproj",
         "packagesPath": "/Users/jonathanlyria/.nuget/packages/",
-        "outputPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ClassLibrary/ClassLibrary/obj/",
+        "outputPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ArtistNetwork/ArtistNetwork/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/jonathanlyria/.nuget/NuGet/NuGet.Config"
@@ -90,8 +90,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ClassLibrary/ClassLibrary/ClassLibrary.csproj": {
-                "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ClassLibrary/ClassLibrary/ClassLibrary.csproj"
+              "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ArtistNetwork/ArtistNetwork/ArtistNetwork.csproj": {
+                "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ArtistNetwork/ArtistNetwork/ArtistNetwork.csproj"
               }
             }
           }

@@ -8,16 +8,15 @@ namespace NettspendToSautiSol
     public class PlaylistCreator
     {
         private readonly List<ArtistNode> _pathOfArtists;
-        private SpotifyAuthorizer _spotifyAuthorizer;
         private List<string> _songs;
         private readonly string _accessToken;
-        private string playlistId;
+        private string _playlistId;
         
-        public PlaylistCreator(List<ArtistNode> pathOfArtists, string _pkceToken)
+        public PlaylistCreator(List<ArtistNode> pathOfArtists, string pkceToken)
         {
             _songs = new List<string>();
             _pathOfArtists = pathOfArtists;
-            _accessToken = _pkceToken;
+            _accessToken = pkceToken;
             CreatePlaylist();
         }
 
@@ -59,7 +58,7 @@ namespace NettspendToSautiSol
         }
        
         
-        public void CreatePlaylist()
+        private void CreatePlaylist()
         {
 
             using (HttpClient client = new HttpClient())
@@ -87,8 +86,8 @@ namespace NettspendToSautiSol
                     string jsonResponse = response.Content.ReadAsStringAsync().Result;
                     Console.WriteLine($"Playlist created successfully: {jsonResponse}");
                     JsonDocument document = JsonDocument.Parse(jsonResponse);
-                    playlistId = document.RootElement.GetProperty("id").GetString();
-                    Console.WriteLine($"Playlist ID: {playlistId}");
+                    _playlistId = document.RootElement.GetProperty("id").GetString();
+                    Console.WriteLine($"Playlist ID: {_playlistId}");
                 }
                 else
                 {
@@ -105,7 +104,7 @@ namespace NettspendToSautiSol
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-                string url = $"https://api.spotify.com/v1/playlists/{playlistId}/tracks";
+                string url = $"https://api.spotify.com/v1/playlists/{_playlistId}/tracks";
 
                 var requestBody = new
                 {
@@ -275,7 +274,7 @@ namespace NettspendToSautiSol
         }
         public string GetPlaylistLink()
         {
-            return $"https://open.spotify.com/playlist/{playlistId}";
+            return $"https://open.spotify.com/playlist/{_playlistId}";
         }
 
         

@@ -14,19 +14,14 @@ namespace NettspendToSautiSol
             string databasePath =
                @"/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/NetworkExpander/NetworkExpander/database.db";
             
-            // ArtistExpander artistExpander = new(databaseManager);
-            
             WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
             builder.Services.AddControllers();
-            builder.Services.AddSingleton(new DatabaseManager(databasePath));
-            builder.Services.AddSingleton<SpotifyAuthorizer>();
+            builder.Services.AddSingleton<SpotifyAuthorizeWithPKCEAuthenticator>();
 
             builder.Services.AddSingleton<ArtistNetwork>(sp =>
             {
-                DatabaseManager dbManager = sp.GetRequiredService<DatabaseManager>();
-                ArtistNetwork artistNetwork = new ArtistNetwork(dbManager);
-                artistNetwork.LoadNetwork(); // Load during registration
+                ArtistNetwork artistNetwork = new ArtistNetwork();
                 return artistNetwork;
             });
 

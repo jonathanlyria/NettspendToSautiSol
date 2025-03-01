@@ -7,10 +7,8 @@ namespace NettspendToSautiSol
     {
         public static async Task Main(string[] args)
         {
-            var databasePath =
-               @"/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/NetworkExpander/NetworkExpander/database.db";
-            DatabaseManager databaseManager = new DatabaseManager(databasePath);
-            NetworkExpander artistExpander = new NetworkExpander(databaseManager);
+            string databasePath = args[0];
+            ArtistNetworkExpander artistExpander = new ArtistNetworkExpander(databasePath);
             artistExpander.SearchForArtists();
         }
     }

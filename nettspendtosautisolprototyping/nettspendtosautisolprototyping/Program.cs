@@ -1,13 +1,40 @@
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using NettspendToSautiSol;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace nettspendtosautisolprototyping;
 
 public class Program
 {
+    static HttpClient client = new();
     public static async Task Main(string[] args)
+    {
+        WebApplicationBuilder builder = WebApplication.CreateBuilder();
+        builder.Services.AddControllers();
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowSpecificOrigin", policy =>
+            {
+                policy.WithOrigins("http://localhost", "http://127.0.0.1:8080")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
+        WebApplication app = builder.Build();
+        app.UseRouting();
+   
+        app.UseCors("AllowSpecificOrigin");
+
+        app.MapControllers();
+
+        await app.RunAsync();
+        
+    }
+
+    public void TestMergeSpotifyLastFmData()
     {
         SpotifyClientCredentials authorizer = new SpotifyClientCredentials();
         var accessToken = authorizer.GetAccessTokenAsync().Result.AccessToken;
@@ -21,15 +48,85 @@ public class Program
             {
                 Console.WriteLine(lastFmData.lastFmDataInvalidReason);
             }
+
             foreach (var topTrack in lastFmTopTracks)
             {
                 Console.WriteLine(topTrack);
             }
-            
+
             SpotifyData spotifyData = new SpotifyData(artistName, accessToken, lastFmTopTracks);
-            Console.WriteLine($"name : {spotifyData.Name} id: {spotifyData.SpotifyId} populairty: {spotifyData.Popularity}, last popular track: {spotifyData.LatestTopTrackReleaseDate}, meets popularity requirment {spotifyData.MeetsPopularityMinimum}, do last fmtoptracks match in spotify top 5 {spotifyData._isLastFmTopTrackInTop5}");
+            Console.WriteLine(
+                $"name : {spotifyData.Name} id: {spotifyData.SpotifyId} populairty: {spotifyData.Popularity}, last popular track: {spotifyData.LatestTopTrackReleaseDate}, meets popularity requirment {spotifyData.MeetsPopularityMinimum}, do last fmtoptracks match in spotify top 5 {spotifyData._isLastFmTopTrackInTop5}");
         }
     }
+    
+
+    public static void TestCreatePlaylist()
+    {
+        SpotifyPkce authorizer = new SpotifyPkce();
+        var pkceToken = authorizer.GetAuthoizationPKCEAccessToken(); //gets the pkce token. THIS IS NOT A SAFE WAY TO DO THIS. WILL CHANGE FOR FINAL PROJECT
+        Console.WriteLine("Please enter the name of the playlist: ");
+        string playlistName = Console.ReadLine();
+        Console.WriteLine("Please enter the length of the playlist: ");
+        int playlistLength = int.Parse(Console.ReadLine());
+        string[] songs = new string[playlistLength];
+        for (int i = 0; i < playlistLength; i++)
+        {
+            Console.WriteLine($"Enter the name of song {i + 1}: ");
+            string song = Console.ReadLine();
+            songs[i] = song;
+        }
+        string[] songIds = new string[songs.Length];
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", pkceToken); //this allows me to access both the scoped and non-scoped data from spotify
+
+        HttpResponseMessage userIdResponse = client.GetAsync("https://api.spotify.com/v1/me").Result; //sends get request for users id, next few lines is parsing
+        
+        string stringUserIdResponse = userIdResponse.Content.ReadAsStringAsync().Result;
+        JsonDocument userIdDocument = JsonDocument.Parse(stringUserIdResponse); 
+        string userId = userIdDocument.RootElement.GetProperty("id").GetString(); //this gets the users id which i can use to add songs to teh playlist
+        for (int i = 0; i < songs.Length; i++)
+        {
+            string song = songs[i];
+            string url = $"https://api.spotify.com/v1/search?q={Uri.EscapeDataString(song)}&type=track&limit=1"; //use the spotify v1 search endpoint to fidn the ids. limits to one response
+            
+            HttpResponseMessage songResponse = client.GetAsync(url).Result;
+            string songResponseContent = songResponse.Content.ReadAsStringAsync().Result;
+            JsonDocument songDocument = JsonDocument.Parse(songResponseContent);
+
+            var tracks = songDocument.RootElement.GetProperty("tracks").GetProperty("items").EnumerateArray().FirstOrDefault(); //it always returns an array so it forces to get only the first item
+            songIds[i] = tracks.GetProperty("id").GetString();
+        }
+        // prepare the POST body
+        var payload = new
+        {
+            name = $"{playlistName}",
+            @public = false
+        };
+        string jsonPayload = JsonSerializer.Serialize(payload);
+        StringContent createPlaylist = new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json");
+        HttpResponseMessage playlistResponseMessage = client.PostAsync($"https://api.spotify.com/v1/users/{userId}/playlists", createPlaylist).Result; //POST request creates the playlist in the user library
+     
+        string jsonResponse = playlistResponseMessage.Content.ReadAsStringAsync().Result;
+        JsonDocument document = JsonDocument.Parse(jsonResponse);
+        string playlistId = document.RootElement.GetProperty("id").GetString();
+        
+        var requestBody = new
+        {
+            uris = songIds.Select(trackId => $"spotify:track:{trackId}") //spotify requires you to specify the type of track it is
+        }; //prepares to batch the songids found in the search  to add to the playlist
+        string jsonBody = JsonSerializer.Serialize(requestBody);
+        StringContent addSongsToPlaylist = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+        HttpResponseMessage addSongsResponseMessage = client.PostAsync($"https://api.spotify.com/v1/playlists/{playlistId}/tracks", addSongsToPlaylist).Result;// posts the songs to the playlist
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = $"https://api.spotify.com/v1/playlists/{playlistId}/tracks",
+            UseShellExecute = true,
+        }); //opens the playlist in window
+    }
+    
+
+
 }
 
 public class SpotifyData

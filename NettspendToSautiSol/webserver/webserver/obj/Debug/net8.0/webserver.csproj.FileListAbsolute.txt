@@ -151,8 +151,6 @@ C:/Users/jl154125/Source/Repos/jonathanlyria/NettspendToSautiSol/webserver/webse
 /Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/runtimes/win-arm64/native/e_sqlite3.dll
 /Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/runtimes/win-x64/native/e_sqlite3.dll
 /Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/runtimes/win-x86/native/e_sqlite3.dll
-/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/ClassLibrary.dll
-/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/ClassLibrary.pdb
 /Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/obj/Debug/net8.0/webserver.csproj.AssemblyReference.cache
 /Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/obj/Debug/net8.0/webserver.GeneratedMSBuildEditorConfig.editorconfig
 /Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/obj/Debug/net8.0/webserver.AssemblyInfoInputs.cache
@@ -175,3 +173,5 @@ C:/Users/jl154125/Source/Repos/jonathanlyria/NettspendToSautiSol/webserver/webse
 /Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/obj/Debug/net8.0/webserver.pdb
 /Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/obj/Debug/net8.0/webserver.genruntimeconfig.cache
 /Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/obj/Debug/net8.0/ref/webserver.dll
+/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/ArtistNetwork.dll
+/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/ArtistNetwork.pdb
