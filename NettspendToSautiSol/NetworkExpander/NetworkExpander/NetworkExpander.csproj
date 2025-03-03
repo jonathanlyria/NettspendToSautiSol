@@ -9,7 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ArtistNetwork\ArtistNetwork\ArtistNetwork.csproj" />
+    <ProjectReference Include="..\..\DatabaseServices\DatabaseServices.csproj" />
+    <ProjectReference Include="..\..\ExternalWebServices\ExternalWebServices.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,14 +4,144 @@
     "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/webserver.csproj": {}
   },
   "projects": {
-    "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ArtistNetwork/ArtistNetwork/ArtistNetwork.csproj": {
+    "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/DatabaseServices/DatabaseServices.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ArtistNetwork/ArtistNetwork/ArtistNetwork.csproj",
-        "projectName": "ArtistNetwork",
-        "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ArtistNetwork/ArtistNetwork/ArtistNetwork.csproj",
+        "projectUniqueName": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/DatabaseServices/DatabaseServices.csproj",
+        "projectName": "DatabaseServices",
+        "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/DatabaseServices/DatabaseServices.csproj",
         "packagesPath": "/Users/jonathanlyria/.nuget/packages/",
-        "outputPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ArtistNetwork/ArtistNetwork/obj/",
+        "outputPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/DatabaseServices/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/jonathanlyria/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/GlobalTypes/GlobalTypes.csproj": {
+                "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/GlobalTypes/GlobalTypes.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.Data.Sqlite": {
+              "target": "Package",
+              "version": "[10.0.0-preview.1.25081.1, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.405/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ExternalWebServices/ExternalWebServices.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ExternalWebServices/ExternalWebServices.csproj",
+        "projectName": "ExternalWebServices",
+        "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ExternalWebServices/ExternalWebServices.csproj",
+        "packagesPath": "/Users/jonathanlyria/.nuget/packages/",
+        "outputPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ExternalWebServices/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/jonathanlyria/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/GlobalTypes/GlobalTypes.csproj": {
+                "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/GlobalTypes/GlobalTypes.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.405/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/GlobalTypes/GlobalTypes.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/GlobalTypes/GlobalTypes.csproj",
+        "projectName": "GlobalTypes",
+        "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/GlobalTypes/GlobalTypes.csproj",
+        "packagesPath": "/Users/jonathanlyria/.nuget/packages/",
+        "outputPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/GlobalTypes/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/jonathanlyria/.nuget/NuGet/NuGet.Config"
@@ -42,12 +172,6 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
-          "dependencies": {
-            "Microsoft.Data.Sqlite": {
-              "target": "Package",
-              "version": "[8.0.12, )"
-            }
-          },
           "imports": [
             "net461",
             "net462",
@@ -90,8 +214,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ArtistNetwork/ArtistNetwork/ArtistNetwork.csproj": {
-                "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ArtistNetwork/ArtistNetwork/ArtistNetwork.csproj"
+              "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/DatabaseServices/DatabaseServices.csproj": {
+                "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/DatabaseServices/DatabaseServices.csproj"
+              },
+              "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ExternalWebServices/ExternalWebServices.csproj": {
+                "projectPath": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/ExternalWebServices/ExternalWebServices.csproj"
               }
             }
           }

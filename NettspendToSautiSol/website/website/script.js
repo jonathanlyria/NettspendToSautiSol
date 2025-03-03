@@ -1,14 +1,12 @@
-﻿// Citation of 
-
-const input = document.getElementById('input');
+﻿const input = document.getElementById('input');
 const output = document.getElementById('output-box');
 let headerTitle = document.getElementById('header-title');
 
-let pkceToken = null;
 let artist1 = null;
 let artist2 = null;
 let pathIds = [];
-let authState = null; // Store state for code verification
+let authState = null;
+let authCode = null;
 
 function appendOutput(text, className = '') {
     const newLine = document.createElement('div');
@@ -19,73 +17,7 @@ function appendOutput(text, className = '') {
 }
 
 async function processFlow() {
-    appendOutput("Welcome! Press Enter to sign into Spotify.");
-    input.addEventListener('keydown', async function handler(event) {
-        if (event.key === 'Enter') {
-            input.removeEventListener('keydown', handler);
-            appendOutput("> Authenticating...");
-            await startAuthentication();
-        }
-    });
-}
-
-async function startAuthentication() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/authenticate-user`);
-
-        // First check if response is JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            const text = await response.text();
-            throw new Error(`Invalid response: ${text.slice(0, 100)}`);
-        }
-
-        const data = await response.json();
-
-        if (response.ok) {
-            authState = data.state;
-            const authWindow = window.open(data.authUrl, 'Spotify Auth', 'width=600,height=800');
-            listenForAuthCallback();
-        } else {
-            appendOutput(`Error: ${data.Error || 'Unknown error'}`, "error");
-        }
-    } catch (error) {
-        appendOutput(`Authentication failed: ${error.message}`, "error");
-        console.error('Authentication error:', error);
-    }
-}
-
-async function listenForAuthCallback() {
-    window.addEventListener('message', async (event) => {
-        if (event.origin !== window.location.origin) return;
-
-        const { code, state } = event.data;
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/exchange-code`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code, state })
-            });
-
-            // Handle non-JSON responses
-            const contentType = response.headers.get('content-type');
-            const data = contentType?.includes('application/json')
-                ? await response.json()
-                : { Error: await response.text() };
-
-            if (response.ok) {
-                pkceToken = data.pkceToken;
-                appendOutput("Authentication successful.", "success");
-                requestArtistOne();
-            } else {
-                appendOutput(`Error: ${data.Error || 'Unknown error'}`, "error");
-            }
-        } catch (error) {
-            appendOutput(`Code exchange failed: ${error.message}`, "error");
-            console.error('Code exchange error:', error);
-        }
-    });
+    requestArtistOne();
 }
 
 function requestArtistOne() {
@@ -150,7 +82,7 @@ async function checkArtistExists(artistName) {
             return false;
         }
 
-        return data.artistExist;
+        return data.ArtistExist; // Match API casing (ArtistExist)
     } catch (error) {
         appendOutput(`An error occurred: ${error.message}`, "error");
         return false;
@@ -165,16 +97,73 @@ async function findPathBetweenArtists() {
         console.log(data);
 
         if (response.ok) {
-            const pathNames = data.pathName.join(" -> ");
-            pathIds = data.pathId;
+            const pathNames = data.PathName.join(" -> "); // Match API casing (PathName)
+            pathIds = data.PathId; // Match API casing (PathId)
             appendOutput(`Path found: ${pathNames}`, "success");
-            requestPlaylistCreation();
+            requestAuthentication();
         } else {
             appendOutput(`Error: ${data.Error}`, "error");
         }
     } catch (error) {
         appendOutput(`An error occurred: ${error.message}`, "error");
     }
+}
+
+async function requestAuthentication() {
+    appendOutput("Press Enter to sign into Spotify.");
+    input.addEventListener('keydown', async function handler(event) {
+        if (event.key === 'Enter') {
+            input.removeEventListener('keydown', handler);
+            appendOutput("> Authenticating...");
+            await startAuthentication();
+        }
+    });
+}
+
+async function startAuthentication() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/authenticate-user`);
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            throw new Error(`Invalid response: ${text.slice(0, 100)}`);
+        }
+
+        const data = await response.json();
+
+        if (response.ok) {
+            authState = data.State; // Match API casing (State)
+            const authWindow = window.open(data.AuthUrl, 'Spotify Auth', 'width=600,height=800'); // Match API casing (AuthUrl)
+
+            // Setup handler for when Spotify redirects back to our site with the code
+            window.addEventListener('message', handleSpotifyCallback);
+            appendOutput("Waiting for Spotify authentication...");
+        } else {
+            appendOutput(`Error: ${data.Error || 'Unknown error'}`, "error");
+        }
+    } catch (error) {
+        appendOutput(`Authentication failed: ${error.message}`, "error");
+        console.error('Authentication error:', error);
+    }
+}
+
+// This function would be called when the Spotify OAuth redirect occurs
+function handleSpotifyCallback(event) {
+    if (event.origin !== window.location.origin) return;
+
+    const { code, state } = event.data;
+
+    // Verify state matches what we sent
+    if (state !== authState) {
+        appendOutput("Authentication failed: State mismatch", "error");
+        return;
+    }
+
+    authCode = code;
+    window.removeEventListener('message', handleSpotifyCallback);
+    appendOutput("Authentication successful.", "success");
+    requestPlaylistCreation();
 }
 
 function requestPlaylistCreation() {
@@ -192,7 +181,8 @@ async function createPlaylist() {
         appendOutput("Creating playlist...");
         const requestBody = {
             Path: pathIds,
-            PkceToken: pkceToken,
+            Code: authCode,  // Send code instead of token
+            State: authState // Include state for verification
         };
         console.log("Request body:", requestBody);
 
@@ -201,15 +191,13 @@ async function createPlaylist() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody),
         });
-        console.log(response)
+        console.log(response);
         const data = await response.json();
-        console.log(data)
+        console.log(data);
 
         if (response.ok) {
-            appendOutput(`Playlist created successfully! Link: ${data.playlistLink}`, "success");
-            window.open(data.playlistLink, '_blank');
-
-
+            appendOutput(`Playlist created successfully! Link: ${data.PlaylistLink}`, "success"); // Match API casing (PlaylistLink)
+            window.open(data.PlaylistLink, '_blank');
         } else {
             appendOutput(`Error: ${data.Error}`, "error");
         }
