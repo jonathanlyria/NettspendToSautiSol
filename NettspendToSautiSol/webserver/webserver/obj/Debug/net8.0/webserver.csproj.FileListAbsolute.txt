@@ -173,5 +173,10 @@ C:/Users/jl154125/Source/Repos/jonathanlyria/NettspendToSautiSol/webserver/webse
 /Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/obj/Debug/net8.0/webserver.pdb
 /Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/obj/Debug/net8.0/webserver.genruntimeconfig.cache
 /Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/obj/Debug/net8.0/ref/webserver.dll
-/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/ArtistNetwork.dll
-/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/ArtistNetwork.pdb
+/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/runtimes/linux-musl-s390x/native/libe_sqlite3.so
+/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/DatabaseServices.dll
+/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/ExternalWebServices.dll
+/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/GlobalTypes.dll
+/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/DatabaseServices.pdb
+/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/ExternalWebServices.pdb
+/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/webserver/bin/Debug/net8.0/GlobalTypes.pdb

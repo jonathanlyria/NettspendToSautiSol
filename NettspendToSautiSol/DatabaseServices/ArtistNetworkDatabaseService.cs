@@ -3,7 +3,7 @@ using Microsoft.Data.Sqlite;
 namespace NettspendToSautiSol;
 
 
-public class ArtistNetworkDatabaseService
+public class ArtistNetworkDatabaseService : IArtistNetworkDatabaseService
 {
     private readonly IDatabaseRepository _databaseRepository;
     

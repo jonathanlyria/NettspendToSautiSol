@@ -1,6 +1,5 @@
 namespace NettspendToSautiSol
 {
-    // Citation on changing class equals
     public class ArtistNode(string name, string spotifyId)
     {
         public readonly string Name = name;

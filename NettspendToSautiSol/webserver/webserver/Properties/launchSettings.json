@@ -17,7 +17,9 @@
       "applicationUrl": "http://localhost:5048",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "commandLineArgs": "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/DatabaseServices/ArtistNetworkDatabase.db 53ee19bdc5b943ef8f9accecb5df2fc6 4f4e0054a3a344a88de1f267f90275b0 http://127.0.0.1:8080/website/website/callback.html"
+      
     },
     "https": {
       "commandName": "Project",

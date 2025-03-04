@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace NettspendToSautiSol
 {
@@ -13,79 +9,104 @@ namespace NettspendToSautiSol
     {
         private readonly ISpotifyClientCredentialAuthorizer _clientCredentialAuthorizer;
         private readonly HttpClient _httpClient;
-        private string _accessToken;
-        private DateTime _tokenExpiryTime;
 
         public GetPlaylistSongsService(ISpotifyClientCredentialAuthorizer clientCredentialAuthorizer, HttpClient httpClient)
         {
             _httpClient = httpClient;
             _clientCredentialAuthorizer = clientCredentialAuthorizer; 
-            RefreshAccessToken();
         }
         
-        private async Task RefreshAccessToken()
+        private async Task<string> GetAccessToken()
         {
-            if (DateTime.UtcNow >= _tokenExpiryTime.AddMinutes(-1))
+            string accessToken = string.Empty;
+            try
             {
-                try
-                {
-                    (string AccessToken, int ExpiresIn) tokenData = await _clientCredentialAuthorizer.GetAccessToken();
-                    _accessToken = tokenData.AccessToken;
-                    _tokenExpiryTime = DateTime.UtcNow.AddSeconds(tokenData.ExpiresIn);
+                var tokenData = await _clientCredentialAuthorizer.GetAccessToken();
+                accessToken = tokenData.AccessToken;
 
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine("Access token refreshed successfully.");
-                    Console.ResetColor();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error refreshing access token: {ex.Message}");
-                    throw new Exception("Failed to refresh access token.", ex);
-                }
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine("Access token refreshed successfully.");
+                Console.ResetColor();
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error refreshing access token: {ex.Message}");
+                throw new Exception("Failed to refresh access token.", ex);
+            }
+            return accessToken;
+        
         }
 
         public async Task<List<string>> GetPlaylistSongIds(List<ArtistNode> pathOfArtists)
         {
-            await RefreshAccessToken();
+            string accessToken = await GetAccessToken();
             
-            List<string> tracks = new List<string>();
+            List<string> songIds = new List<string>();  // List to be returned
+            List<string> songNames = new List<string>(); // List to track song names for deduplication
             List<int> songsPerArtist = pathOfArtists.Select(_ => 3).ToList();
 
             for (int i = 0; i < pathOfArtists.Count; i++)
             {
-                if (i + 1 < pathOfArtists.Count && await FindFeature(pathOfArtists[i], pathOfArtists[i + 1]) is string feature)
+                if (i + 1 < pathOfArtists.Count)
                 {
-                    songsPerArtist[i]--;
-                    songsPerArtist[i + 1]--;
-                    
-                    var artistSongs = await FindSongsForArtist(
-                        pathOfArtists[i], 
-                        songsPerArtist[i], 
-                        tracks);
+                    var featureResult = await FindFeature(pathOfArtists[i], 
+                        pathOfArtists[i + 1],
+                        accessToken);
+                    if (featureResult != null)
+                    {
+                        string featureId = featureResult.Value.id;
+                        string featureName = featureResult.Value.normalizedName;
                         
-                    tracks.AddRange(artistSongs);
-                    tracks.Add(feature);
+                        songsPerArtist[i]--;
+                        songsPerArtist[i + 1]--;
+                        
+                        var artistSongs = await FindSongsForArtist(
+                            pathOfArtists[i], 
+                            songsPerArtist[i], 
+                            songNames, accessToken);
+                            
+                        songIds.AddRange(artistSongs.Item1);
+                        songNames.AddRange(artistSongs.Item2);
+                        
+                        songIds.Add(featureId);
+                        songNames.Add(featureName);
+                    }
+                    else
+                    {
+                        var artistSongs = await FindSongsForArtist(
+                            pathOfArtists[i], 
+                            songsPerArtist[i], 
+                            songNames, accessToken);
+                            
+                        songIds.AddRange(artistSongs.Item1);
+                        songNames.AddRange(artistSongs.Item2);
+                    }
                 }
                 else
                 {
                     var artistSongs = await FindSongsForArtist(
                         pathOfArtists[i], 
                         songsPerArtist[i], 
-                        tracks);
+                        songNames, accessToken);
                         
-                    tracks.AddRange(artistSongs);
+                    songIds.AddRange(artistSongs.Item1);
+                    songNames.AddRange(artistSongs.Item2);
                 }
             }
+
+            foreach (var trackId in songIds)
+            {
+                Console.WriteLine(trackId);
+            }
             
-            return tracks;
+            return songIds;
         }
 
-        private async Task<string> FindFeature(ArtistNode artist1, ArtistNode artist2)
+        private async Task<(string id, string normalizedName)?> FindFeature(ArtistNode artist1, ArtistNode artist2, string accessToken)
         {
             Console.WriteLine($"Searching for feature between {artist1.Name} and {artist2.Name}");
             
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             string query = Uri.EscapeDataString($"{artist1.Name} {artist2.Name}");
             string url = $"https://api.spotify.com/v1/search?q={query}&type=track&limit=10";
@@ -126,20 +147,23 @@ namespace NettspendToSautiSol
                 {
                     string trackName = track.GetProperty("name").GetString();
                     string songId = track.GetProperty("id").GetString();
+                    string normalizedName = NormalizeSongName(trackName);
                     Console.WriteLine($"Found Feature: {trackName}");
-                    return songId;
+                    return (songId, normalizedName);
                 }
             }
 
             Console.WriteLine($"No feature found between {artist1.Name} and {artist2.Name}");
             return null;
         }
-        
-        private async Task<List<string>> FindSongsForArtist(ArtistNode artist, int tracksPerArtist, List<string> currentSongs)
+
+        // Also modify FindSongsForArtist to return tuples
+        private async Task<(List<string>, List<string>)> FindSongsForArtist(ArtistNode artist, int tracksPerArtist, List<string> previousSongNames, string accessToken)
         {
-            List<string> songs = new List<string>();
+            List<string> songIds = new List<string>();
+            List<string> songNames = new List<string>();
             
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             string url = $"https://api.spotify.com/v1/artists/{artist.SpotifyId}/top-tracks?market=US";
             Console.WriteLine(url);
@@ -148,14 +172,14 @@ namespace NettspendToSautiSol
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Error: {response.StatusCode}");
-                return songs;
+                return (songIds, songNames);
             }
 
             string jsonResponse = await response.Content.ReadAsStringAsync();
             JsonDocument document = JsonDocument.Parse(jsonResponse);
             var topSongs = document.RootElement.GetProperty("tracks").EnumerateArray(); 
 
-            List<string> potentialSongs = new List<string>();
+            Dictionary<string, string> potentialSongs = new Dictionary<string, string>(); // Track ID -> Normalized Name
             foreach (JsonElement song in topSongs)
             {
                 int artistCount = song.GetProperty("artists").GetArrayLength();
@@ -167,15 +191,14 @@ namespace NettspendToSautiSol
                     string trackName = song.GetProperty("name").GetString();
                     string normalizedSongName = NormalizeSongName(trackName);
                     
-                    bool isDuplicate = currentSongs.Any(existingSong =>
-                        existingSong.Contains($" {normalizedSongName} ") || 
-                        normalizedSongName.Contains($" {existingSong} ") || 
-                        existingSong.Equals(normalizedSongName));
+                    bool isDuplicate = songNames.Any(existingName =>
+                        existingName.Contains($" {normalizedSongName} ") || 
+                        normalizedSongName.Contains($" {existingName} ") || 
+                        existingName.Equals(normalizedSongName));
 
                     if (!isDuplicate)
                     {
-                        potentialSongs.Add(songId);
-                        currentSongs.Add(normalizedSongName);
+                        potentialSongs.Add(songId, normalizedSongName);
                     }
                 }
             }
@@ -183,15 +206,21 @@ namespace NettspendToSautiSol
             if (potentialSongs.Count > 0)
             {
                 Random random = new Random();
-                songs = potentialSongs
+                var selectedSongs = potentialSongs
                     .OrderBy(x => random.Next())
                     .Take(tracksPerArtist)
                     .ToList();
+                    
+                // Add selected song IDs to return list
+                foreach (var song in selectedSongs)
+                {
+                    songIds.Add(song.Key);
+                    songNames.Add(song.Value); // Add normalized name to the tracking list
+                }
             }
 
-            return songs;
+            return (songIds, songNames);
         }
-        
         private string NormalizeSongName(string songName)
         {
             songName = songName.ToLower();

@@ -86,10 +86,10 @@ namespace NettspendToSautiSol
         {
             try
             {
-                
                 string accessToken = spotifyPkceCodeAuthorizer.ExchangeCode(request.Code, request.State);
-                if (request.Path == null || !request.Path.Any())
+                if (!request.Path.Any())
                 {
+                    Console.WriteLine("No path provided");
                     return BadRequest(new { Error = "Path is empty" });
                 }
 
@@ -101,7 +101,11 @@ namespace NettspendToSautiSol
                     artists.Add(new ArtistNode(artistName, spotifyId));
                 }
                 
+                
                 List<string> songIds = await getPlaylistSongsService.GetPlaylistSongIds(artists);
+                Console.WriteLine("Creating playlist");
+                foreach (string songId in songIds)
+                    Console.WriteLine(songId);
                 string playlistLink = await createPlaylistService.CreatePlaylist(songIds, artists.First().Name, 
                     artists.Last().Name, accessToken);
                 

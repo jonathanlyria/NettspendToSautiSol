@@ -24,11 +24,11 @@ namespace NettspendToSautiSol
             SpotifyClientCredentialAuthorizer spotifyClientCredentialAuthorizer = new SpotifyClientCredentialAuthorizer(spotifyClientId, spotifyClientSecret, client);
             
             LastFmApiService lastFmApiService = new LastFmApiService(lastFmApiKey, client);
-            SpotifyApiService spotifyApiService = new SpotifyApiService(spotifyClientCredentialAuthorizer, client);
+            SpotifyExpanderService spotifyExpanderService = new SpotifyExpanderService(spotifyClientCredentialAuthorizer, client);
             ArtistVerificationService artistVerificationService= new ArtistVerificationService();
             
             NetworkExpanderDatabaseService artistNetworkDatabaseService = new NetworkExpanderDatabaseService(artistRepository, connectionRepository, databaseRepository);
-            ArtistNetworkExpander artistExpander = new ArtistNetworkExpander(artistNetworkDatabaseService, lastFmApiService, spotifyApiService, artistVerificationService);
+            ArtistNetworkExpander artistExpander = new ArtistNetworkExpander(artistNetworkDatabaseService, lastFmApiService, spotifyExpanderService, artistVerificationService);
             
             await artistExpander.SearchForArtists();
             

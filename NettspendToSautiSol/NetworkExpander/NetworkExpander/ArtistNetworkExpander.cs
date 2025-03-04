@@ -6,14 +6,14 @@ namespace NettspendToSautiSol
     {
         private readonly INetworkExpanderDatabaseService _networkExpanderDatabaseService;
         private readonly IArtistVerificationService _artistVerificationService;
-        private readonly ISpotifyApiService _spotifyApiService;
+        private readonly ISpotifyExpanderService _spotifyExpanderService;
         private readonly ILastFmApiService _lastFmApiService;
         
         public ArtistNetworkExpander(INetworkExpanderDatabaseService networkExpanderDatabaseService, 
-            ILastFmApiService lastFmApiService, ISpotifyApiService spotifyApiService, IArtistVerificationService artistVerificationService)
+            ILastFmApiService lastFmApiService, ISpotifyExpanderService spotifyExpanderService, IArtistVerificationService artistVerificationService)
         {
             _lastFmApiService = lastFmApiService;
-            _spotifyApiService = spotifyApiService;
+            _spotifyExpanderService = spotifyExpanderService;
             _networkExpanderDatabaseService = networkExpanderDatabaseService;
             _artistVerificationService = artistVerificationService;
         }
@@ -78,13 +78,13 @@ namespace NettspendToSautiSol
                     {
                         List<string> lastFmTopTracks = await _lastFmApiService.GetTopTracks(similarArtistName);
 
-                        KeyValuePair<(string, string), int> spotifyArtistDetails = await _spotifyApiService.GetArtistDetails(similarArtistName);
+                        KeyValuePair<(string, string), int> spotifyArtistDetails = await _spotifyExpanderService.GetArtistDetails(similarArtistName);
 
                         string spotifyId = spotifyArtistDetails.Key.Item1;
                         string name = spotifyArtistDetails.Key.Item2;
                         int popularity = spotifyArtistDetails.Value;
 
-                        Dictionary<string, DateTime> spotifyTopTracks = await _spotifyApiService.GetTopTracks(spotifyId);
+                        Dictionary<string, DateTime> spotifyTopTracks = await _spotifyExpanderService.GetTopTracks(spotifyId);
 
                         string artistVerificationStatus = _artistVerificationService.VerifyArtist(spotifyTopTracks, lastFmTopTracks, popularity);
 

@@ -3,7 +3,7 @@ namespace NettspendToSautiSol
     public class ArtistNetwork : IArtistNetwork
     {
         private readonly Dictionary<ArtistNode, Dictionary<ArtistNode, double>> _adjacencyMatrix;
-        public ArtistNetwork(ArtistNetworkDatabaseService artistNetworkDatabaseService)
+        public ArtistNetwork(IArtistNetworkDatabaseService artistNetworkDatabaseService)
         {
             _adjacencyMatrix = new Dictionary<ArtistNode, Dictionary<ArtistNode, double>>();
             _adjacencyMatrix = artistNetworkDatabaseService.GetNetwork();

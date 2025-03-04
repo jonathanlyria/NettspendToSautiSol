@@ -4,14 +4,14 @@ using System.Text.RegularExpressions;
 
 namespace NettspendToSautiSol;
 
-public class SpotifyApiService : ISpotifyApiService
+public class SpotifyExpanderService : ISpotifyExpanderService
 {
     private readonly ISpotifyClientCredentialAuthorizer _spotifyClientCredentialAuthorizer;
     private readonly HttpClient _httpClient;
     private string _accessToken;
     private DateTime _tokenExpiryTime;
 
-    public SpotifyApiService(ISpotifyClientCredentialAuthorizer spotifyClientCredentialAuthorizer, HttpClient httpClient)
+    public SpotifyExpanderService(ISpotifyClientCredentialAuthorizer spotifyClientCredentialAuthorizer, HttpClient httpClient)
     {
         _spotifyClientCredentialAuthorizer = spotifyClientCredentialAuthorizer;
         _httpClient = httpClient;

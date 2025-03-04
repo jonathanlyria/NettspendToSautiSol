@@ -1,6 +1,6 @@
 namespace NettspendToSautiSol;
 
-public interface ISpotifyApiService
+public interface ISpotifyExpanderService
 {
     Task<KeyValuePair<(string, string), int>> GetArtistDetails(string artistName);
     Task<Dictionary<string, DateTime>> GetTopTracks(string spotifyId);
