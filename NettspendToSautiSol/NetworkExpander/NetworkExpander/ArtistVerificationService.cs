@@ -1,32 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-namespace NettspendToSautiSol;
+namespace expander;
 
 public class ArtistVerificationService : IArtistVerificationService
 {
 
-    public string VerifyArtist(Dictionary<string, DateTime> spotifyTopTracks, List<string> lastFmTopTracks,
+    public void VerifyArtist(Dictionary<string, DateTime> spotifyTopTracks, List<string> lastFmTopTracks,
         int popularity)
     {
-        string artistVerificationStatus = "Valid Artist";
         DateTime latestTopTrackDate = spotifyTopTracks.Values.Max();
         if (!CheckLastFmAndSpotifyTopTracksMatch(spotifyTopTracks.Keys.ToList(), lastFmTopTracks))
         {
-            artistVerificationStatus = "The last fm and spotify top tracks do not match up";
+            throw new Exception("The last fm and spotify top tracks do not match up");
 
         }
-        else if (!CheckArtistMeetsPopularityMinimum(popularity, latestTopTrackDate))
+        if (!CheckArtistMeetsPopularityMinimum(popularity, latestTopTrackDate))
         {
-            artistVerificationStatus = $"The popularity is too low: Popularity:{popularity}, Age:{(int)(DateTime.UtcNow - latestTopTrackDate).TotalDays/365}.";
+            throw new Exception(
+                $"The popularity is too low: Popularity:{popularity}, Age:{(int)(DateTime.UtcNow - latestTopTrackDate).TotalDays / 365}.");
 
         }
-        return artistVerificationStatus;
     }
     
     

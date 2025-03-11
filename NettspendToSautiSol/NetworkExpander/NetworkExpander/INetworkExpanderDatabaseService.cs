@@ -1,4 +1,6 @@
-namespace NettspendToSautiSol;
+using GlobalTypes;
+
+namespace expander;
 
 public interface INetworkExpanderDatabaseService
 {

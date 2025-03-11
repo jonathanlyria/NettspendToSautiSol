@@ -1,8 +1,8 @@
-namespace NettspendToSautiSol;
+namespace expander;
 
 public interface IArtistVerificationService
 {
-    string VerifyArtist(Dictionary<string, DateTime> spotifyTopTracks, List<string> lastFmTopTracks,
+    void VerifyArtist(Dictionary<string, DateTime> spotifyTopTracks, List<string> lastFmTopTracks,
         int popularity);
     
 }

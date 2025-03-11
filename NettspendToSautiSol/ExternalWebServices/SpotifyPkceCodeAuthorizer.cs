@@ -1,28 +1,31 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
-using System.Web;
-using System.Collections.Concurrent;
 using System.Text.Json;
-using NettspendToSautiSol;
+using ExternalWebServices.Interfaces;
 
 // Citation on PKCE BASICS
 // Citation on Hashing
 // Citation on states
 // Citation on Code challenges and code verifiers
+namespace ExternalWebServices;
+
 public class SpotifyPkceCodeAuthorizer : ISpotifyPkceCodeAuthorizer
 {
     private readonly string _clientId;
     private readonly string _redirectUri;
     private readonly ConcurrentDictionary<string, string> _codeVerifiers = new();
+    private readonly HttpClient _httpClient;
 
 
-    public SpotifyPkceCodeAuthorizer(string clientId, string redirectUri)
+    public SpotifyPkceCodeAuthorizer(HttpClient httpClient, string clientId, string redirectUri)
     {
+        _httpClient = httpClient;
         _clientId = clientId;
         _redirectUri = redirectUri;
     }
 
-    public (string AuthUrl, string State) GetAuthorizationUrl()
+    public async Task<(string AuthUrl, string State)> GetAuthorizationUrl()
     {
         string codeVerifier = GenerateCodeVerifier();
         string codeChallenge = GenerateCodeChallenge(codeVerifier);
@@ -33,22 +36,22 @@ public class SpotifyPkceCodeAuthorizer : ISpotifyPkceCodeAuthorizer
         string authUrl = $"https://accounts.spotify.com/authorize?response_type=code&client_id={_clientId}" +
                          $"&redirect_uri={Uri.EscapeDataString(_redirectUri)}&code_challenge_method=S256" +
                          $"&code_challenge={codeChallenge}&scope=playlist-modify-public&state={state}";
+        //  $"https://accounts.spotify.com/authorize?response_type=code&client_id={_clientId}&redirect_uri={Uri.EscapeDataString(_redirectUri)}&code_challenge_method=S256code_challenge={codeChallenge}&scope=playlist-modify-public&state={state}";
 
         return (authUrl, state);
     }
 
-    public string ExchangeCode(string code, string state)
+    public async Task<string> ExchangeCode(string code, string state)
     {
         if (!_codeVerifiers.TryRemove(state, out string codeVerifier))
             throw new Exception("Invalid state or code verifier not found.");
 
-        return ExchangeAuthorizationCodeForAccessToken(code, codeVerifier);
+        return await ExchangeAuthorizationCodeForAccessToken(code, codeVerifier);
     }
 
-    private string ExchangeAuthorizationCodeForAccessToken(string code, string codeVerifier)
+    private async Task<string> ExchangeAuthorizationCodeForAccessToken(string code, string codeVerifier)
     {
-        using HttpClient client = new();
-        HttpResponseMessage response = client.PostAsync("https://accounts.spotify.com/api/token",
+        HttpResponseMessage response = await _httpClient.PostAsync("https://accounts.spotify.com/api/token",
             new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string, string>("grant_type", "authorization_code"),
@@ -56,17 +59,17 @@ public class SpotifyPkceCodeAuthorizer : ISpotifyPkceCodeAuthorizer
                 new KeyValuePair<string, string>("redirect_uri", _redirectUri),
                 new KeyValuePair<string, string>("client_id", _clientId),
                 new KeyValuePair<string, string>("code_verifier", codeVerifier)
-            })).Result;
+            }));
 
         if (!response.IsSuccessStatusCode)
             throw new Exception($"Failed to exchange authorization code. Status: {response.StatusCode}");
 
-        string jsonResponse = response.Content.ReadAsStringAsync().Result;
+        string jsonResponse = await response.Content.ReadAsStringAsync();
         JsonDocument document = JsonDocument.Parse(jsonResponse);
         return document.RootElement.GetProperty("access_token").GetString()!;
     }
 
-    private static string GenerateCodeVerifier()
+    private string GenerateCodeVerifier()
     {
         byte[] bytes = new byte[32];
         using RandomNumberGenerator rng = RandomNumberGenerator.Create();
@@ -77,7 +80,7 @@ public class SpotifyPkceCodeAuthorizer : ISpotifyPkceCodeAuthorizer
             .Replace("=", "");
     }
 
-    private static string GenerateCodeChallenge(string codeVerifier)
+    private string GenerateCodeChallenge(string codeVerifier)
     {
         using SHA256 sha256 = SHA256.Create();
         byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
@@ -87,7 +90,7 @@ public class SpotifyPkceCodeAuthorizer : ISpotifyPkceCodeAuthorizer
             .Replace("=", "");
     }
 
-    private static string GenerateState()
+    private string GenerateState()
     {
         byte[] bytes = new byte[32];
         using RandomNumberGenerator rng = RandomNumberGenerator.Create();

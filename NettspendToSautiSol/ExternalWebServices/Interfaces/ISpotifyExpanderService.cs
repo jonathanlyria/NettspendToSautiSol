@@ -1,4 +1,4 @@
-namespace NettspendToSautiSol;
+namespace ExternalWebServices.Interfaces;
 
 public interface ISpotifyExpanderService
 {

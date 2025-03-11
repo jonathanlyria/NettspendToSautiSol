@@ -1,4 +1,7 @@
-namespace NettspendToSautiSol;
+using DatabaseServices.Interfaces;
+using GlobalTypes;
+
+namespace expander;
 
 public class NetworkExpanderDatabaseService: INetworkExpanderDatabaseService
 {
@@ -49,9 +52,16 @@ public class NetworkExpanderDatabaseService: INetworkExpanderDatabaseService
         }
         else
         {
-            AddArtistToDb(artist2);
-            AddConnectionToDb(artist1.SpotifyId, artist2.SpotifyId, weight);
-
+            try
+            {
+                AddArtistToDb(artist2);
+                AddConnectionToDb(artist1.SpotifyId, artist2.SpotifyId, weight);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+           
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"Added {artist2.Name} to the artistNetworkDb and added a new connection between {artist1.Name} and {artist2.Name}");
             Console.ResetColor();

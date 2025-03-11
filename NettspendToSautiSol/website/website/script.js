@@ -184,7 +184,7 @@ function requestPlaylistCreation() {
 
 async function createPlaylist() {
     try {
-        appendOutput("Creating playlist...");
+        appendOutput("Creating playlist, wait for 7ish seconds...");
         const requestBody = {
             path: pathIds,
             code: authCode,  // Send code instead of token

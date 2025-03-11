@@ -1,8 +1,10 @@
+using DatabaseServices.Interfaces;
+using GlobalTypes;
 using Microsoft.Data.Sqlite;
 
-namespace NettspendToSautiSol;
+namespace DatabaseServices;
 
-public class ArtistRepository : IArtistRepository
+public class ArtistRepository : IArtistRepository 
 {
     private readonly string _connectionString;
 
@@ -11,7 +13,7 @@ public class ArtistRepository : IArtistRepository
         _connectionString = "Data Source=" + databasePath;
     }
 
-    public bool IsArtistInDbByName(string artistName)
+    public bool IsArtistInDbByName(string artistName) // used by WebServer from user input
     {
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
         {
@@ -20,7 +22,7 @@ public class ArtistRepository : IArtistRepository
             string selectQuery = "SELECT * FROM Artist WHERE LOWER(ArtistName) = LOWER(@artistName);";
             using (SqliteCommand cmd = new SqliteCommand(selectQuery, connection))
             {
-                cmd.Parameters.AddWithValue("@artistName", artistName);
+                cmd.Parameters.AddWithValue("@artistName", artistName); 
                 using (SqliteDataReader reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
@@ -28,13 +30,14 @@ public class ArtistRepository : IArtistRepository
                         return true;
                     }
 
-                    return false;
                 }
             }
         }
+        return false; 
+
     }
 
-    public bool IsArtistInDbById(string id)
+    public bool IsArtistInDbById(string id) // used by NetworkExpanderDbSerice
     {
         using (SqliteConnection connection = new SqliteConnection(_connectionString)) 
         {
@@ -43,12 +46,12 @@ public class ArtistRepository : IArtistRepository
             string selectQuery = "SELECT SpotifyID FROM Artist WHERE SpotifyID = @id;";
             using (SqliteCommand cmd = new SqliteCommand(selectQuery, connection))
             {
-                cmd.Parameters.AddWithValue("@id", id);
+                cmd.Parameters.AddWithValue("@id", id); 
                 using (SqliteDataReader reader = cmd.ExecuteReader())
                 {
-                    if (reader.Read())
+                    if (reader.Read()) 
                     {
-                        return true;
+                        return true;  
                     }
                 }
             }
@@ -57,7 +60,7 @@ public class ArtistRepository : IArtistRepository
         return false;
     }
 
-    public string GetIdFromName(string artistName)
+    public string GetIdFromName(string artistName) // Used by WebServerDbService
     {
         string spotifyId = "";
 
@@ -83,7 +86,7 @@ public class ArtistRepository : IArtistRepository
         return spotifyId;
     }
 
-    public string GetNameFromId(string spotifyId)
+    public string GetNameFromId(string spotifyId) // Used by WebServer to get name from spotifyId
     {
         string name = "";
 
@@ -108,7 +111,7 @@ public class ArtistRepository : IArtistRepository
         return name;
     }
 
-    public List<ArtistNode> GetAllArtistNodes()
+    public List<ArtistNode> GetAllArtistNodes() // Used by WebServer to get name, artistId of all the artists 
     {
         List<ArtistNode> artists = new List<ArtistNode>();
 
@@ -135,7 +138,7 @@ public class ArtistRepository : IArtistRepository
         return artists;
     }
 
-    public void UpdateIsExpanded(string spotifyId)
+    public void UpdateIsExpanded(string spotifyId) // used by ArtistExpander to indicate when the similar artists have been found
     {
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
             
@@ -152,7 +155,7 @@ public class ArtistRepository : IArtistRepository
 
     }
 
-    public void AddArtistToDb(ArtistNode artist)
+    public void AddArtistToDb(ArtistNode artist) // used by artistexpander to add an artist to the database
     {
         using (SqliteConnection connection = new SqliteConnection(_connectionString))
         {
@@ -170,7 +173,7 @@ public class ArtistRepository : IArtistRepository
         
     }
      
-    public Queue<ArtistNode> GetSearchQueue()
+    public Queue<ArtistNode> GetSearchQueue() // used by artist expander to get a list of artists who havent had their similar artists found 
     {
         Queue<ArtistNode> queue = new Queue<ArtistNode>();
         using (SqliteConnection connection = new SqliteConnection(_connectionString))

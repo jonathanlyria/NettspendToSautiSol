@@ -1,15 +1,12 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using System;
-using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
+using DatabaseServices;
+using DatabaseServices.Interfaces;
+using ExternalWebServices;
+using ExternalWebServices.Interfaces;
 
 // Citation of Cors policy 
 // Citation of adding singletons 
 // Citation of Asp.Net core
-namespace NettspendToSautiSol
+namespace webserver
 {
     public class Program
     {
@@ -39,7 +36,7 @@ namespace NettspendToSautiSol
                     
             builder.Services.AddSingleton<ISpotifyPkceCodeAuthorizer>(sp => 
                 new SpotifyPkceCodeAuthorizer(
-                    spotifyClientId, 
+                    sp.GetRequiredService<HttpClient>(), spotifyClientId, 
                     redirectUri));
             
             builder.Services.AddSingleton<IGetPlaylistSongsService, GetPlaylistSongsService>();

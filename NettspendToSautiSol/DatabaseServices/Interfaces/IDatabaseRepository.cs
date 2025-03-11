@@ -1,8 +1,10 @@
-namespace NettspendToSautiSol;
+using GlobalTypes;
 
-public interface IDatabaseRepository
+namespace DatabaseServices.Interfaces;
+
+public interface IDatabaseRepository 
 {
-    Dictionary<ArtistNode, Dictionary<ArtistNode, double>> GetNetwork();
+    Dictionary<ArtistNode, Dictionary<ArtistNode, double>> GetNetwork(); 
     
     void InitialiseDatabase();
 }

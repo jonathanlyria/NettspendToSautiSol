@@ -1,6 +1,7 @@
-using Microsoft.Data.Sqlite;
+using DatabaseServices.Interfaces;
+using GlobalTypes;
 
-namespace NettspendToSautiSol;
+namespace webserver;
 
 
 public class ArtistNetworkDatabaseService : IArtistNetworkDatabaseService

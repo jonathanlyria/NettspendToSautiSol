@@ -1,8 +1,10 @@
-namespace NettspendToSautiSol;
+using GlobalTypes;
 
-public interface IArtistRepository
+namespace DatabaseServices.Interfaces;
+
+public interface IArtistRepository 
 {
-    bool IsArtistInDbByName(string artistName);
+    bool IsArtistInDbByName(string artistName); 
     bool IsArtistInDbById(string id);
     string GetIdFromName(string artistName);
     string GetNameFromId(string spotifyId);

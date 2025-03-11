@@ -130,7 +130,7 @@
 }
 
 .modal-content {
-    background-color: #121212;
+    background-color: #212121;
     padding: 1%;
     border-radius: 10px;
     text-align: left;
@@ -145,7 +145,7 @@
 
 textarea{
     width: 95%;
-    background-color: #121212;
+    background-color: #212121;
     color: white;
     padding: 1%;
     font-family: "Gotham-Medium", monospace;
@@ -158,7 +158,7 @@ textarea{
 }
 
 button {
-    background: #121212;
+    background: #212121;
     color: #1DB954;
     padding: 1%;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
@@ -170,7 +170,6 @@ button {
 }
 
 button:hover {
-    background-color: #121212;
     color: white;
     border-radius: 8px; /* Ensure corners stay rounded on hover */
 }

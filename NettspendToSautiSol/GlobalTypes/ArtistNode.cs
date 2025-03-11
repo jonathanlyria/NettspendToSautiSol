@@ -1,11 +1,11 @@
-namespace NettspendToSautiSol
+namespace GlobalTypes
 {
     public class ArtistNode(string name, string spotifyId)
     {
         public readonly string Name = name;
         public readonly string SpotifyId = spotifyId;
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object? obj) // needed so it can act 
         {
             if (obj is ArtistNode otherNode)
             {

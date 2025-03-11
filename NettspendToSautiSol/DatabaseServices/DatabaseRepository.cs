@@ -1,6 +1,8 @@
+using DatabaseServices.Interfaces;
+using GlobalTypes;
 using Microsoft.Data.Sqlite;
 
-namespace NettspendToSautiSol;
+namespace DatabaseServices;
 
 public class DatabaseRepository : IDatabaseRepository
 {
@@ -13,7 +15,7 @@ public class DatabaseRepository : IDatabaseRepository
         _connectionString = $"Data Source={databasePath}";
     }
     
-    public void InitialiseDatabase()
+    public void InitialiseDatabase() // used by all database services to initialise the database (creates db file and adds tables to database)
     {
         if (!File.Exists(_databasePath)) 
         {
@@ -48,7 +50,7 @@ public class DatabaseRepository : IDatabaseRepository
             }
         }
     }
-    public Dictionary<ArtistNode, Dictionary<ArtistNode, double>> GetNetwork()
+    public Dictionary<ArtistNode, Dictionary<ArtistNode, double>> GetNetwork() // uses sql join to return the dictionary for the artist network 
     {
         Dictionary<ArtistNode, Dictionary<ArtistNode, double>> artistNetwork = new Dictionary<ArtistNode, Dictionary<ArtistNode, double>>();
 

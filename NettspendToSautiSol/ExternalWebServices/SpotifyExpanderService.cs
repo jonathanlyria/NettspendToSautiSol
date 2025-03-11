@@ -1,8 +1,9 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using ExternalWebServices.Interfaces;
 
-namespace NettspendToSautiSol;
+namespace ExternalWebServices;
 
 public class SpotifyExpanderService : ISpotifyExpanderService
 {
@@ -32,6 +33,7 @@ public class SpotifyExpanderService : ISpotifyExpanderService
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("Access token refreshed successfully.");
                 Console.ResetColor();
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             }
             catch (Exception ex)
             {
@@ -43,11 +45,11 @@ public class SpotifyExpanderService : ISpotifyExpanderService
 
     public async Task<KeyValuePair<(string, string), int>> GetArtistDetails(string artistName)
     {
-        await RefreshAccessToken(); // Ensure token is valid before request
+        await RefreshAccessToken();
+
 
         try
         {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             string url = $"https://api.spotify.com/v1/search?q=artist:\"{Uri.EscapeDataString(artistName)}\"&type=artist&limit=1";
 
             var response = await _httpClient.GetAsync(url);
@@ -66,12 +68,19 @@ public class SpotifyExpanderService : ISpotifyExpanderService
 
             if (artistData.ValueKind == JsonValueKind.Undefined)
                 throw new InvalidOperationException("No artist found for the given name.");
-
-            string spotifyId = artistData.GetProperty("id").GetString()!;
-            string name = artistData.GetProperty("name").GetString()!;
-            int popularity = artistData.GetProperty("popularity").GetInt32();
-
-            return new KeyValuePair<(string, string), int>((spotifyId, name), popularity);
+            try
+            {
+                string spotifyId = artistData.GetProperty("id").GetString() ?? throw new InvalidOperationException();
+                string name = artistData.GetProperty("name").GetString()  ?? throw new InvalidOperationException();
+                int popularity = artistData.GetProperty("popularity").GetInt32();
+                return new KeyValuePair<(string, string), int>((spotifyId, name), popularity);
+            }
+            catch (NullReferenceException ex)
+            {
+                throw new InvalidOperationException("Artist does not have valid data.");
+            }
+            
+          
         }
         catch (HttpRequestException ex)
         {
@@ -96,7 +105,6 @@ public class SpotifyExpanderService : ISpotifyExpanderService
 
         try
         {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             string url = $"https://api.spotify.com/v1/artists/{spotifyId}/top-tracks";
 
             var response = await _httpClient.GetAsync(url);
@@ -117,7 +125,6 @@ public class SpotifyExpanderService : ISpotifyExpanderService
                     throw new FormatException($"Invalid date format: {releaseDateStr}");
                 }
 
-                // Parse date components
                 string[] parts = releaseDateStr.Split('-');
                 int year = int.Parse(parts[0]);
                 int month = parts.Length >= 2 ? int.Parse(parts[1]) : 1;

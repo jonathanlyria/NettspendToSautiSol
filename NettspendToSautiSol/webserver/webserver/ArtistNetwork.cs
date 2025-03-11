@@ -1,4 +1,6 @@
-namespace NettspendToSautiSol
+using GlobalTypes;
+
+namespace webserver
 {
     public class ArtistNetwork : IArtistNetwork
     {

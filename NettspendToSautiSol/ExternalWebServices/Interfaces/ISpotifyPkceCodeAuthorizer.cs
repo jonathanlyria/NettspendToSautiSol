@@ -1,7 +1,7 @@
-namespace NettspendToSautiSol;
+namespace ExternalWebServices.Interfaces;
 
 public interface ISpotifyPkceCodeAuthorizer
 {
-    (string AuthUrl, string State) GetAuthorizationUrl();
-    string ExchangeCode(string code, string state);
+    Task<(string AuthUrl, string State)> GetAuthorizationUrl();
+    Task<string> ExchangeCode(string code, string state);
 }

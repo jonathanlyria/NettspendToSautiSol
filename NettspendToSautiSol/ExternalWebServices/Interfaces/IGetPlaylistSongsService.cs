@@ -1,4 +1,6 @@
-namespace NettspendToSautiSol;
+using GlobalTypes;
+
+namespace ExternalWebServices.Interfaces;
 
 public interface IGetPlaylistSongsService
 {

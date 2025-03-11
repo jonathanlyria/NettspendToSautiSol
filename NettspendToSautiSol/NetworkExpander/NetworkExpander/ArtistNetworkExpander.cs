@@ -1,6 +1,10 @@
+using System.Net;
 using System.Text.Json;
+using DatabaseServices.Interfaces;
+using ExternalWebServices.Interfaces;
+using GlobalTypes;
 
-namespace NettspendToSautiSol
+namespace expander
 {
     public class ArtistNetworkExpander
     {
@@ -18,35 +22,46 @@ namespace NettspendToSautiSol
             _artistVerificationService = artistVerificationService;
         }
 
-        public async Task SearchForArtists()
+        public async Task SearchForArtists(ArtistNode startingArtistNode)
         {
-            Queue<ArtistNode> queue; 
+            Queue<ArtistNode> queue;
             try
             {
+                queue = _networkExpanderDatabaseService.GetSearchQueue();
+            }
+            catch (NullReferenceException ex)
+            {
+                Console.WriteLine(ex.Message);
+                queue = new Queue<ArtistNode>();
+                queue.Enqueue(startingArtistNode);
+                _networkExpanderDatabaseService.AddArtistToDb(startingArtistNode);
                 queue = _networkExpanderDatabaseService.GetSearchQueue();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                queue = new Queue<ArtistNode>();
-                ArtistNode startingArtistNode = new ArtistNode("Drake", "3TVXtAsR1Inumwj472S9r4");
-                queue.Enqueue(startingArtistNode);
-                _networkExpanderDatabaseService.AddArtistToDb(startingArtistNode);
-                queue = _networkExpanderDatabaseService.GetSearchQueue();
+                throw new Exception(ex.Message);
             }
-            int callCount = 0;
-            while (callCount < 2000 && queue.Count > 0)            
+            while (queue.Count > 0)            
             {
                 int queueLength = queue.Count;
                 for (int i = 0; i < queueLength; i++)
                 {
+                    Dictionary<ArtistNode, double> similarArtists = new Dictionary<ArtistNode, double>();
                     ArtistNode currentArtist = queue.Dequeue();
+
+                    try
+                    {
+                        similarArtists = await FindSimilarArtists(currentArtist);
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        Console.WriteLine("Timed out, Run again in 36-48 hrs");
+                        break;
+                    }
                     _networkExpanderDatabaseService.UpdateIsExpanded(currentArtist.SpotifyId);
-                    Dictionary<ArtistNode, double> similarArtists = await GetSimilarArtists(currentArtist);
-
-                    callCount++;
-                    Console.WriteLine($"{callCount} API calls made");
-
+                    
                     foreach (KeyValuePair<ArtistNode, double> similarArtist in similarArtists)
                     {
                         Console.WriteLine($"FOUND: {similarArtist.Key.SpotifyId} - {similarArtist.Key.Name}");
@@ -54,6 +69,7 @@ namespace NettspendToSautiSol
                         {
                             queue.Enqueue(similarArtist.Key);
                         }
+                        
                         _networkExpanderDatabaseService.AddArtistAndConnectionToDb(currentArtist, similarArtist.Key, similarArtist.Value);
                      
                     }
@@ -61,7 +77,7 @@ namespace NettspendToSautiSol
             }
         }
         
-        private async Task<Dictionary<ArtistNode, double>> GetSimilarArtists(ArtistNode startingArtistNode)
+        private async Task<Dictionary<ArtistNode, double>> FindSimilarArtists(ArtistNode startingArtistNode)
         {
             Dictionary<ArtistNode, double> similarArtists = new Dictionary<ArtistNode, double>();
 
@@ -86,16 +102,16 @@ namespace NettspendToSautiSol
 
                         Dictionary<string, DateTime> spotifyTopTracks = await _spotifyExpanderService.GetTopTracks(spotifyId);
 
-                        string artistVerificationStatus = _artistVerificationService.VerifyArtist(spotifyTopTracks, lastFmTopTracks, popularity);
-
-                        if (artistVerificationStatus != "Valid Artist")
+                        try
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine($"{similarArtistName} is invalid: {artistVerificationStatus}");
-                            Console.ResetColor();
+                            _artistVerificationService.VerifyArtist(spotifyTopTracks, lastFmTopTracks, popularity);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
                             continue;
                         }
-
+                        
                         ArtistNode foundArtist = new ArtistNode(name, spotifyId);
                         similarArtists[foundArtist] = similarArtistWeight;
                     }
@@ -104,6 +120,7 @@ namespace NettspendToSautiSol
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine($"HTTP request failed for artist {similarArtistName}: {ex.Message}");
                         Console.ResetColor();
+                        throw new HttpRequestException(ex.Message);
                     }
                     catch (JsonException ex)
                     {
@@ -136,6 +153,7 @@ namespace NettspendToSautiSol
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Failed to fetch similar artists from Last.fm: {ex.Message}");
                 Console.ResetColor();
+                throw new HttpRequestException(ex.Message);
             }
             catch (JsonException ex)
             {
@@ -146,7 +164,7 @@ namespace NettspendToSautiSol
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Unexpected error in GetSimilarArtists: {ex.Message}");
+                Console.WriteLine($"Unexpected error in FindSimilarArtists: {ex.Message}");
                 Console.ResetColor();
             }
 

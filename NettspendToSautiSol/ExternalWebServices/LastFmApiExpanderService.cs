@@ -1,7 +1,8 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using ExternalWebServices.Interfaces;
 
-namespace NettspendToSautiSol;
+namespace ExternalWebServices;
 
 public class LastFmApiService : ILastFmApiService
 {
@@ -63,6 +64,10 @@ public class LastFmApiService : ILastFmApiService
         {
             throw new InvalidOperationException("Failed to parse JSON response.", ex);
         }
+        catch (Exception ex)
+        {
+            throw new Exception($"Error {ex.Message}", ex);
+        }
     }
 
     public async Task<List<string>> GetTopTracks(string artistName)
@@ -74,13 +79,11 @@ public class LastFmApiService : ILastFmApiService
             { "artist", artistName },
             { "api_key", _apiKey },
             { "format", "json" },
-            { "limit", "10" }
         };
-
         string requestUrl = BuildUrlWithParams("https://ws.audioscrobbler.com/2.0/", topTrackParameters);
 
         try
-        {
+        { 
             var response = await _httpClient.GetAsync(requestUrl);
             response.EnsureSuccessStatusCode();
 

@@ -1,4 +1,6 @@
-namespace NettspendToSautiSol;
+using GlobalTypes;
+
+namespace webserver;
 
 public interface IArtistNetworkDatabaseService
 {

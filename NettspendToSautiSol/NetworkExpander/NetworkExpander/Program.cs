@@ -1,7 +1,8 @@
-﻿
-using System.IO;
+﻿using DatabaseServices;
+using ExternalWebServices;
+using GlobalTypes;
 
-namespace NettspendToSautiSol
+namespace expander
 {
     public class Program
     {
@@ -12,7 +13,7 @@ namespace NettspendToSautiSol
             string spotifyClientId = args[2];
             string spotifyClientSecret = args[3];
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"database path: {databasePath} last fm {lastFmApiKey} spotfy {spotifyClientId} || {spotifyClientSecret}");
+            Console.WriteLine($"database path: {databasePath} last fm {lastFmApiKey} spotify {spotifyClientId} || {spotifyClientSecret}");
             Console.ResetColor();
             
             HttpClient client = new HttpClient();
@@ -30,7 +31,9 @@ namespace NettspendToSautiSol
             NetworkExpanderDatabaseService artistNetworkDatabaseService = new NetworkExpanderDatabaseService(artistRepository, connectionRepository, databaseRepository);
             ArtistNetworkExpander artistExpander = new ArtistNetworkExpander(artistNetworkDatabaseService, lastFmApiService, spotifyExpanderService, artistVerificationService);
             
-            await artistExpander.SearchForArtists();
+            ArtistNode startingArtistNode = new ArtistNode("Drake", "3TVXtAsR1Inumwj472S9r4");
+
+            await artistExpander.SearchForArtists(startingArtistNode);
             
         }
     }

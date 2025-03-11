@@ -1,8 +1,9 @@
+using DatabaseServices.Interfaces;
+using ExternalWebServices.Interfaces;
+using GlobalTypes;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-using NettspendToSautiSol;
 
-namespace NettspendToSautiSol
+namespace webserver
 {
 
     public class PlaylistRequest
@@ -67,11 +68,11 @@ namespace NettspendToSautiSol
         }
         
         [HttpGet("authenticate-user")]
-        public IActionResult Authenticate()
+        public async Task<IActionResult> Authenticate()
         {
             try
             {
-                (string authUrl, string state) = spotifyPkceCodeAuthorizer.GetAuthorizationUrl();
+                (string authUrl, string state) = await spotifyPkceCodeAuthorizer.GetAuthorizationUrl();
                 return Ok(new { AuthUrl = authUrl, State = state });
             }
             catch (Exception ex)
@@ -86,7 +87,11 @@ namespace NettspendToSautiSol
         {
             try
             {
-                string accessToken = spotifyPkceCodeAuthorizer.ExchangeCode(request.Code, request.State);
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                string accessToken = await spotifyPkceCodeAuthorizer.ExchangeCode(request.Code, request.State);
+                Console.WriteLine($"PKCE TOKEN: {accessToken}");
+                Console.ResetColor();
+
                 if (!request.Path.Any())
                 {
                     Console.WriteLine("No path provided");
@@ -101,7 +106,6 @@ namespace NettspendToSautiSol
                     artists.Add(new ArtistNode(artistName, spotifyId));
                 }
                 
-                
                 List<string> songIds = await getPlaylistSongsService.GetPlaylistSongIds(artists);
                 Console.WriteLine("Creating playlist");
                 foreach (string songId in songIds)
@@ -113,17 +117,18 @@ namespace NettspendToSautiSol
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return StatusCode(500, new { Error = "An error occurred while creating the playlist.", Details = ex.Message });
             }
         } 
 
 
         [HttpGet("report-issue")]
-        public IActionResult ReportIssue([FromQuery] string artistName)
+        public IActionResult ReportIssue([FromQuery] string issue)
         {
             try
             {
-                if (string.IsNullOrEmpty(artistName))
+                if (string.IsNullOrEmpty(issue))
                 {
                     return BadRequest("Artist name cannot be empty.");
                 }
@@ -135,9 +140,9 @@ namespace NettspendToSautiSol
                     System.IO.File.Create(path).Dispose();  
                 }
 
-                System.IO.File.AppendAllText(path, $"{artistName}{Environment.NewLine}");
+                System.IO.File.AppendAllText(path, $"{issue}{Environment.NewLine}");
 
-                return Ok($"Issue reported for artist: {artistName}");
+                return Ok($"Issue reported for artist: {issue}");
             }
             catch (Exception ex)
             {

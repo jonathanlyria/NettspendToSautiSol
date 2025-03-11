@@ -14,7 +14,7 @@ document.getElementById('submit-issue').addEventListener('click', async () => {
     errorElement.classList.add('hidden');
 
     try {
-        const response = await fetch(`/report-issue?artistName=${encodeURIComponent(issueText)}`);
+        const response = await fetch(`${API_BASE_URL}/report-issue?issue=${encodeURIComponent(issueText)}`);
         const message = await response.text();
 
         if (response.ok) {
