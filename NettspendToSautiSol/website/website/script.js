@@ -184,13 +184,12 @@ function requestPlaylistCreation() {
 
 async function createPlaylist() {
     try {
-        appendOutput("Creating playlist, wait for 7ish seconds...");
+        appendOutput("Finding songs and creating your playlist. This may take a moment...");
         const requestBody = {
             path: pathIds,
             code: authCode,  // Send code instead of token
             state: authState // Include state for verification
         };
-        console.log("Request body:", requestBody);
 
         const response = await fetch(`${API_BASE_URL}/create-playlist`, {
             method: 'POST',

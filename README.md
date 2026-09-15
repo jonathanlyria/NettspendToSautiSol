@@ -42,7 +42,7 @@ The included database snapshot contained **1,246 artists and 2,605 connection ro
 
 ## Status
 
-The .NET solution builds, the graph regression checks pass, and local API checks cover successful routes, unknown artists, and invalid requests. The project remains a prototype: the live Spotify authorisation, current API access, playlist creation, and browser experience need a separate end-to-end check with valid credentials. There are still compiler warnings in the external-service code.
+The .NET backend builds, 14 graph checks and 9 Spotify checks pass, and local API checks cover successful routes, unknown artists, invalid requests and expired sign-ins. A live read-only Spotify check authenticated successfully and selected 27 songs for the 11-artist Nettspend → Cleo Sol route. The full browser flow was then verified: fresh Spotify sign-in created a public Nettspend → Cleo Sol playlist with 27 songs (about 1 hour 15 minutes), visible in Spotify. The project remains a prototype, with compiler warnings and ingestion limitations.
 
 The existing static frontend is in `NettspendToSautiSol/website/website`. The C# `website` entry point is empty; serve the frontend files directly using the instructions below.
 
@@ -53,11 +53,14 @@ Requirements: **.NET 8 SDK** and network access to NuGet for the first dependenc
 ```sh
 dotnet build NettspendToSautiSol/NettspendToSautiSol.sln
 dotnet run --project tests/Pathfinding.Checks
+dotnet run --project tests/Spotify.Checks
 ```
 
-The check runner needs no Spotify or Last.fm credentials. It exercises the production graph classes and SQLite loader, including disconnected nodes, isolated artists, invalid scores, and zero-cost cycles. It also compares results with a separate Floyd–Warshall implementation over 1,280 source–destination cases on deterministic generated graphs. A failing check produces a non-zero exit code.
+Both check runners work without Spotify or Last.fm credentials. The Spotify checks use simulated HTTP responses to verify current endpoints, ordered batches of at most 100 songs, artist identity, duplicate filtering, rate limits, partial writes and isolated authentication headers.
 
-A GitHub Actions workflow is configured to build the solution and run these checks on pushes and pull requests. Its first hosted run is pending publication.
+The graph runner exercises the production graph classes and SQLite loader, including disconnected nodes, isolated artists, invalid scores, and zero-cost cycles. It also compares results with a separate Floyd–Warshall implementation over 1,280 source–destination cases on deterministic generated graphs. A failing check produces a non-zero exit code.
+
+A GitHub Actions workflow is configured to build the solution and run these checks on pushes and pull requests. Hosted run results are available in the repository’s Actions tab.
 
 ## Run the connected application
 
@@ -96,6 +99,14 @@ python3 -m http.server 8080 --bind 127.0.0.1 \
 
 Open `http://127.0.0.1:8080`. Its API configuration currently targets `http://localhost:5048/api`. Provider access and callback registration must match your own application configuration.
 
+### Spotify compatibility and playlist selection
+
+The playlist flow uses `POST /me/playlists` and `POST /playlists/{id}/items`, following [Spotify's February 2026 development-mode migration](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide). The app owner needs an active Spotify Premium subscription; authorised users must have access to the development app.
+
+Artist top-tracks is no longer available to development apps. Song selection now uses up to 10 Spotify search results per query, with the GB market as the current catalogue filter. Candidate songs must match stored Spotify artist IDs. The existing heuristic selects up to three contributions per artist, using an exact two-artist collaboration as a bridge where found, and otherwise solo tracks. A bridge consumes one slot from each artist. Solo candidates are randomised and normalised names are deduplicated, so runs can differ and fewer songs may be available. Search is not a popularity ranking or an exhaustive catalogue scan.
+
+The HTTP client sends authentication on each request and does not store cookies. API failures are reported by stage; no suitable songs means no playlist is created. Failed writes are not automatically retried because Spotify may already have saved them. If adding songs fails after creation, the error identifies the playlist to inspect first. After a failed attempt or server restart, refresh the page and sign in again: OAuth codes and states are single-use.
+
 ### Expand the artist graph
 
 After setting the environment variables, including `LASTFM_API_KEY`:
@@ -104,7 +115,7 @@ After setting the environment variables, including `LASTFM_API_KEY`:
 dotnet run --project NettspendToSautiSol/NetworkExpander/NetworkExpander
 ```
 
-This operation writes to the configured database and calls external APIs. The existing expander starts from a hard-coded seed artist, applies popularity thresholds, and has limited retry/checkpoint handling. Review its behaviour and provider limits before running it against a dataset you want to preserve.
+This operation writes to the configured database and calls external APIs. The existing expander still uses removed development-mode artist top-tracks/popularity data and needs a separate migration before it can reliably expand the graph. It starts from a hard-coded seed artist and has limited retry/checkpoint handling. Review its behaviour and provider limits before running it against a dataset you want to preserve.
 
 ## Repository map
 

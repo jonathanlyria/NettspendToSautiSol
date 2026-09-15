@@ -44,28 +44,29 @@ public class SpotifyPkceCodeAuthorizer : ISpotifyPkceCodeAuthorizer
     public async Task<string> ExchangeCode(string code, string state)
     {
         if (!_codeVerifiers.TryRemove(state, out string codeVerifier))
-            throw new Exception("Invalid state or code verifier not found.");
+            throw new SpotifyApiException("This Spotify sign-in has expired or already been used. Refresh the page and sign in again.");
 
         return await ExchangeAuthorizationCodeForAccessToken(code, codeVerifier);
     }
 
     private async Task<string> ExchangeAuthorizationCodeForAccessToken(string code, string codeVerifier)
     {
-        HttpResponseMessage response = await _httpClient.PostAsync("https://accounts.spotify.com/api/token",
-            new FormUrlEncodedContent(new[]
+        using var request = new HttpRequestMessage(HttpMethod.Post, "https://accounts.spotify.com/api/token")
+        {
+            Content = new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string, string>("grant_type", "authorization_code"),
                 new KeyValuePair<string, string>("code", code),
                 new KeyValuePair<string, string>("redirect_uri", _redirectUri),
                 new KeyValuePair<string, string>("client_id", _clientId),
                 new KeyValuePair<string, string>("code_verifier", codeVerifier)
-            }));
-
-        if (!response.IsSuccessStatusCode)
-            throw new Exception($"Failed to exchange authorization code. Status: {response.StatusCode}");
+            })
+        };
+        using HttpResponseMessage response = await _httpClient.SendAsync(request);
+        SpotifyApiException.Check(response, "sign-in verification");
 
         string jsonResponse = await response.Content.ReadAsStringAsync();
-        JsonDocument document = JsonDocument.Parse(jsonResponse);
+        using JsonDocument document = JsonDocument.Parse(jsonResponse);
         return document.RootElement.GetProperty("access_token").GetString()!;
     }
 

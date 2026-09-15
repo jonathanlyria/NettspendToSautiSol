@@ -22,15 +22,11 @@ public class SpotifyClientCredentialAuthorizer : ISpotifyClientCredentialAuthori
     public async Task<(string AccessToken, int ExpiresIn)> GetAccessToken()
     {
         string authHeader = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_clientId}:{_clientSecret}"));
-        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", authHeader);
-
-        StringContent requestContent = new StringContent("grant_type=client_credentials", Encoding.UTF8, "application/x-www-form-urlencoded");
-        HttpResponseMessage response = await _httpClient.PostAsync(TokenUrl, requestContent);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception($"Failed to retrieve access token. Status code: {response.StatusCode}, Response: {await response.Content.ReadAsStringAsync()}");
-        }
+        using var request = new HttpRequestMessage(HttpMethod.Post, TokenUrl);
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", authHeader);
+        request.Content = new FormUrlEncodedContent(new Dictionary<string, string> { ["grant_type"] = "client_credentials" });
+        using HttpResponseMessage response = await _httpClient.SendAsync(request);
+        SpotifyApiException.Check(response, "catalogue authentication");
 
         string jsonResponse = await response.Content.ReadAsStringAsync();
         JsonElement tokenData = JsonSerializer.Deserialize<JsonElement>(jsonResponse);

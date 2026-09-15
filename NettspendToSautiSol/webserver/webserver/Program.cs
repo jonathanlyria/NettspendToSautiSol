@@ -23,7 +23,7 @@ namespace webserver
             
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddSingleton<HttpClient>();
+            builder.Services.AddSingleton<HttpClient>(_ => SpotifyHttpClient.Create());
 
             ArtistRepository artistRepository = new ArtistRepository(databasePath);
             DatabaseRepository databaseRepository = new DatabaseRepository(databasePath);

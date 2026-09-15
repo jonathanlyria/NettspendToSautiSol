@@ -1,5 +1,6 @@
 using DatabaseServices.Interfaces;
 using ExternalWebServices.Interfaces;
+using ExternalWebServices;
 using GlobalTypes;
 using Microsoft.AspNetCore.Mvc;
 
@@ -93,6 +94,7 @@ namespace webserver
         [HttpPost("create-playlist")]
         public async Task<IActionResult> CreatePlaylist([FromBody] PlaylistRequest request)
         {
+            string stage = "verifying Spotify sign-in";
             try
             {
                 if (request.Path is null || request.Path.Count == 0)
@@ -114,19 +116,26 @@ namespace webserver
                     artists.Add(new ArtistNode(artistName, spotifyId));
                 }
                 
+                stage = "selecting songs";
                 List<string> songIds = await getPlaylistSongsService.GetPlaylistSongIds(artists);
-                Console.WriteLine("Creating playlist");
-                foreach (string songId in songIds)
-                    Console.WriteLine(songId);
+                stage = "creating the playlist";
                 string playlistLink = await createPlaylistService.CreatePlaylist(songIds, artists.First().Name, 
                     artists.Last().Name, accessToken);
                 
                 return Ok(new { Message = "Playlist created successfully.", PlaylistLink = playlistLink});
             }
+            catch (SpotifyApiException ex)
+            {
+                Console.WriteLine($"Playlist failed while {stage}: {ex.Message}");
+                return StatusCode(502, new { Error = ex.Message });
+            }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return StatusCode(500, new { Error = "An error occurred while creating the playlist." });
+                Console.WriteLine($"Playlist failed while {stage}: {ex.GetType().Name}; cause: {ex.GetBaseException().GetType().Name}");
+                string advice = stage == "creating the playlist"
+                    ? "Check your Spotify library before retrying: a playlist may already have been created."
+                    : "Refresh the page and sign in to Spotify again before retrying.";
+                return StatusCode(500, new { Error = $"An error occurred while {stage}. {advice}" });
             }
         } 
 

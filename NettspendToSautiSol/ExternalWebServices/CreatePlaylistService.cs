@@ -1,212 +1,51 @@
 using System.Net.Http.Headers;
-using System.Text;
+using System.Net.Http.Json;
 using System.Text.Json;
 using ExternalWebServices.Interfaces;
 
 namespace ExternalWebServices;
 
-public class CreatePlaylistService: ICreatePlaylistService
+public class CreatePlaylistService(HttpClient httpClient) : ICreatePlaylistService
 {
-    private readonly HttpClient _httpClient;
-    public CreatePlaylistService(HttpClient httpClient)
+    public async Task<string> CreatePlaylist(List<string> songIds, string firstArtist, string lastArtist, string accessToken)
     {
-        _httpClient = httpClient;
-    }
-    
-    // used by server to create playlist once sonAgs have been found
-    public async Task<string> CreatePlaylist(List<string> songIds, string firstArtist, string lastArtist, string accessToken) 
-    {
-        try
-        {
-            string playlistId = await AddPlaylistToUserLibrary(firstArtist, lastArtist, accessToken);
-            await AddSongsToPlaylist(songIds, playlistId, accessToken);
-            return $"https://open.spotify.com/playlist/{playlistId}";
-        }
-        catch (HttpRequestException ex)
-        {
-            throw new HttpRequestException($"Spotify API request failed: {ex.Message}", ex);
-        }
-        catch (JsonException ex)
-        {
-            throw new InvalidOperationException("Failed to parse Spotify API JSON response.", ex);
-        }
-        catch (FormatException ex)
-        {
-            throw new InvalidOperationException($"Invalid date format or value: {ex.Message}", ex);
-        }
-        finally
-        {
-            _httpClient.DefaultRequestHeaders.Authorization = null;
-        }        
-    }
+        // Resolve songs before creating anything in the user's library.
+        if (songIds.Count == 0)
+            throw new SpotifyApiException("No suitable songs were found. No playlist was created.");
 
-    private async Task<string> AddPlaylistToUserLibrary(string firstArtist, string lastArtist, string accessToken)
-    {
-        string userId = await GetUserId(accessToken);
-        
-        try
-        {
-            var request = new HttpRequestMessage(
-                HttpMethod.Post, 
-                $"https://api.spotify.com/v1/users/{userId}/playlists"
-            );
-            
-            var content = new
-            {
-                name = $"from {firstArtist} to {lastArtist}",
-                description = $"Creates a playlist that transitions between" +
-                              $" {firstArtist} and {lastArtist}.",
-                @public = true
-            };
-            
-            request.Content = new StringContent(
-                JsonSerializer.Serialize(content), 
-                Encoding.UTF8, 
-                "application/json"
-            );
-    
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            
-            var response = await _httpClient.SendAsync(request);
-            
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new HttpRequestException($"Error creating playlist: {response.StatusCode}");
-            }
-
-            string jsonResponse = response.Content.ReadAsStringAsync().Result;
-            Console.WriteLine($"Playlist created successfully: {jsonResponse}");
-            
-            JsonDocument document = JsonDocument.Parse(jsonResponse);
-            var playlistId = document.RootElement.GetProperty("id").GetString();
-            
-            Console.WriteLine($"Playlist ID: {playlistId}");
-            return playlistId;
-            
-        }
-        catch (HttpRequestException ex)
-        {
-            throw new HttpRequestException($"Spotify API request failed: {ex.Message}", ex);
-        }
-        catch (JsonException ex)
-        {
-            throw new InvalidOperationException("Failed to parse Spotify API JSON response.", ex);
-        }
-        catch (FormatException ex)
-        {
-            throw new InvalidOperationException($"Invalid date format or value: {ex.Message}", ex);
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Something went wrong: {ex.Message}", ex);
-        }
-        finally
-        {
-            _httpClient.DefaultRequestHeaders.Authorization = null;
-        }        
-    }
-
-    private async Task AddSongsToPlaylist(List<string> songIds, string playlistId, string accessToken)
-    {
-       
-        var request = new HttpRequestMessage(
-            HttpMethod.Post, 
-            $"https://api.spotify.com/v1/playlists/{playlistId}/tracks"
-        );
-
+        using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.spotify.com/v1/me/playlists");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-        var requestBody = new
+        request.Content = JsonContent.Create(new
         {
-            uris = songIds.Select(id => $"spotify:track:{id}").ToArray()
-        };
-        
-        request.Content = new StringContent(
-            JsonSerializer.Serialize(requestBody), 
-            Encoding.UTF8, 
-            "application/json"
-        );
-        
+            name = $"from {firstArtist} to {lastArtist}",
+            description = $"A playlist that transitions between {firstArtist} and {lastArtist}.",
+            @public = true
+        });
+        using var response = await httpClient.SendAsync(request);
+        SpotifyApiException.Check(response, "playlist creation");
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        string playlistId = document.RootElement.GetProperty("id").GetString()
+            ?? throw new SpotifyApiException("Spotify created a playlist but returned no playlist ID. Check your library before retrying.");
+        string link = $"https://open.spotify.com/playlist/{playlistId}";
+
         try
         {
-            HttpResponseMessage response = await _httpClient.SendAsync(request);
-            if (!response.IsSuccessStatusCode)
+            // Spotify permits at most 100 items per request; preserve route order.
+            foreach (var batch in songIds.Chunk(100))
             {
-                throw new Exception($"Failed to add tracks to the playlist {response.StatusCode}: {response.ReasonPhrase}.");
+                using var add = new HttpRequestMessage(HttpMethod.Post,
+                    $"https://api.spotify.com/v1/playlists/{Uri.EscapeDataString(playlistId)}/items");
+                add.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                add.Content = JsonContent.Create(new { uris = batch.Select(id => $"spotify:track:{id}").ToArray() });
+                using var added = await httpClient.SendAsync(add);
+                SpotifyApiException.Check(added, "adding songs");
             }
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or SpotifyApiException)
         {
-            throw new HttpRequestException($"Spotify API request failed: {ex.Message}", ex);
+            // Never automatically retry writes: a timeout can follow a successful write.
+            throw new SpotifyApiException($"The playlist was created, but adding all songs could not be confirmed. Check {link} before trying again.");
         }
-        catch (JsonException ex)
-        {
-            throw new InvalidOperationException("Failed to send Spotify playlist response: json error", ex);
-        }
-        catch (FormatException ex)
-        {
-            throw new InvalidOperationException($"Invalid date format or value: {ex.Message}", ex);
-        }
-        finally
-        {
-            _httpClient.DefaultRequestHeaders.Authorization = null;
-        }        
-        
-        
-
-       
-
+        return link;
     }
-    
-
-    private async Task<string> GetUserId(string accessToken)
-    {
-        try
-        {
-            var request = new HttpRequestMessage(
-                HttpMethod.Get, 
-                $"https://api.spotify.com/v1/me"
-            );
-        
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            HttpResponseMessage response = await _httpClient.SendAsync(request);
-            if (!response.IsSuccessStatusCode)
-            {
-                string errorContent = await response.Content.ReadAsStringAsync();
-                throw new HttpRequestException($"Failed to get user ID. Status: {response.StatusCode}. Response: {errorContent}");
-            }
-            
-            string jsonResponse = await response.Content.ReadAsStringAsync();
-            JsonDocument document = JsonDocument.Parse(jsonResponse);
-            if (document.RootElement.GetProperty("id").GetString() == null)
-                throw new Exception("Failed to retrieve user ID.");
-        
-            return document.RootElement.GetProperty("id").GetString();
-            
-        }
-        catch (HttpRequestException ex)
-        {
-            throw new HttpRequestException($"Spotify API request failed: {ex.Message}", ex);
-        }
-        catch (JsonException ex)
-        {
-            throw new InvalidOperationException("Failed to send Spotify playlist response: json error", ex);
-        }
-        catch (FormatException ex)
-        {
-            throw new InvalidOperationException($"Invalid Format {ex.Message}", ex);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Failed to retrieve user ID: {ex.Message}");
-        }
-        finally
-        {
-            _httpClient.DefaultRequestHeaders.Authorization = null;
-        }   
-        
-        
-     
-    }
-
 }
