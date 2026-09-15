@@ -2,6 +2,7 @@ using DatabaseServices;
 using DatabaseServices.Interfaces;
 using ExternalWebServices;
 using ExternalWebServices.Interfaces;
+using GlobalTypes;
 
 // Citation of Cors policy 
 // Citation of adding singletons 
@@ -12,12 +13,15 @@ namespace webserver
     {
         public static async Task Main(string[] args)
         {
-            string databasePath = args[0];
-            string spotifyClientId = args[1];
-            string spotifyClientSecret = args[2];
-            string redirectUri = args[3];
+            string databasePath = EnvironmentConfiguration.Require("ARTIST_DATABASE_PATH");
+            string spotifyClientId = EnvironmentConfiguration.Require("SPOTIFY_CLIENT_ID");
+            string spotifyClientSecret = EnvironmentConfiguration.Require("SPOTIFY_CLIENT_SECRET");
+            string redirectUri = EnvironmentConfiguration.Require("SPOTIFY_REDIRECT_URI");
+
+            if (!File.Exists(databasePath))
+                throw new FileNotFoundException("The configured artist database does not exist.", databasePath);
             
-            WebApplicationBuilder builder = WebApplication.CreateBuilder();
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddSingleton<HttpClient>();
 
@@ -66,7 +70,6 @@ namespace webserver
 
             IArtistNetwork artistNetwork = app.Services.GetRequiredService<IArtistNetwork>();
             Console.WriteLine("Waiting for the artist network to finish loading...");
-            await Task.Run(() => artistNetwork.DisplayAllConnections()); 
             Console.WriteLine("Artist network loaded!");
 
             app.UseRouting();

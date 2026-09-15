@@ -1,78 +1,78 @@
 using GlobalTypes;
 
-namespace webserver
+namespace webserver;
+
+/// <summary>A graph whose edge values are finite, non-negative traversal costs.</summary>
+public class ArtistNetwork : IArtistNetwork
 {
-    public class ArtistNetwork : IArtistNetwork
+    private readonly Dictionary<ArtistNode, Dictionary<ArtistNode, double>> _adjacencyList;
+
+    public ArtistNetwork(IArtistNetworkDatabaseService artistNetworkDatabaseService)
     {
-        private readonly Dictionary<ArtistNode, Dictionary<ArtistNode, double>> _adjacencyMatrix;
-        public ArtistNetwork(IArtistNetworkDatabaseService artistNetworkDatabaseService)
+        _adjacencyList = artistNetworkDatabaseService.GetNetwork();
+        foreach (var neighbours in _adjacencyList.Values)
+        foreach (double cost in neighbours.Values)
         {
-            _adjacencyMatrix = new Dictionary<ArtistNode, Dictionary<ArtistNode, double>>();
-            _adjacencyMatrix = artistNetworkDatabaseService.GetNetwork();
-            Console.WriteLine("Finished loading the artist network.");        
+            if (!double.IsFinite(cost) || cost < 0)
+                throw new ArgumentOutOfRangeException(nameof(artistNetworkDatabaseService),
+                    "Dijkstra's algorithm requires finite, non-negative edge costs.");
         }
-        
-        public void DisplayAllConnections()
+    }
+
+    public void DisplayAllConnections()
+    {
+        foreach (var (artist, neighbours) in _adjacencyList)
+        foreach (var (neighbour, cost) in neighbours)
+            Console.WriteLine($"{artist.Name} -> {neighbour.Name} (Cost: {cost})");
+    }
+
+    /// <summary>Returns an empty route when either endpoint is absent or no route exists.</summary>
+    public List<ArtistNode> FindPathWithDijkstras(ArtistNode startArtistNode, ArtistNode endArtistNode)
+    {
+        if (!_adjacencyList.ContainsKey(startArtistNode) || !_adjacencyList.ContainsKey(endArtistNode))
+            return [];
+
+        var queue = new PriorityQueue<ArtistNode, double>();
+        var distances = new Dictionary<ArtistNode, double> { [startArtistNode] = 0 };
+        var previous = new Dictionary<ArtistNode, ArtistNode>();
+        queue.Enqueue(startArtistNode, 0);
+
+        while (queue.TryDequeue(out var current, out double queuedDistance))
         {
-            Console.WriteLine("All Artist Connections in the Network:");
-            foreach (var kvp in _adjacencyMatrix)
+            // A better route may have superseded an earlier entry for this artist.
+            if (queuedDistance > distances[current])
+                continue;
+
+            if (current.Equals(endArtistNode))
             {
-                ArtistNode artist = kvp.Key;
-                foreach (var connection in kvp.Value)
+                var path = new List<ArtistNode> { current };
+                while (previous.TryGetValue(current, out var predecessor))
                 {
-                    Console.WriteLine($"{artist.Name} -> {connection.Key.Name} (Weight: {connection.Value})");
+                    path.Add(predecessor);
+                    current = predecessor;
+                }
+                path.Reverse();
+                return path;
+            }
+
+            if (!_adjacencyList.TryGetValue(current, out var neighbours))
+                continue;
+
+            foreach (var (neighbour, cost) in neighbours)
+            {
+                double candidate = queuedDistance + cost;
+                if (!double.IsFinite(candidate))
+                    throw new OverflowException("The route cost exceeds the supported numeric range.");
+
+                if (!distances.TryGetValue(neighbour, out double known) || candidate < known)
+                {
+                    distances[neighbour] = candidate;
+                    previous[neighbour] = current;
+                    queue.Enqueue(neighbour, candidate);
                 }
             }
         }
-        public List<ArtistNode> FindPathWithDijkstras(ArtistNode startArtistNode, ArtistNode endArtistNode)
-        {
-            PriorityQueue<ArtistNode, double> priorityQueue = new PriorityQueue<ArtistNode, double>();
-            Dictionary<ArtistNode, double> distances = new Dictionary<ArtistNode, double>();
-            Dictionary<ArtistNode, ArtistNode> previous = new Dictionary<ArtistNode, ArtistNode>();
-            List<ArtistNode> Path = new List<ArtistNode>();
 
-        
-            foreach (ArtistNode artist in _adjacencyMatrix.Keys)
-            {
-                distances[artist] = double.MaxValue;
-                previous[artist] = null;
-            }
-            distances[startArtistNode] = 0;
-
-            priorityQueue.Enqueue(startArtistNode, 0);
-
-            while (priorityQueue.Count > 0)
-            {
-                ArtistNode currentArtist = priorityQueue.Dequeue();
-                double currentDistance = distances[currentArtist];
-
-                if (currentArtist.SpotifyId == endArtistNode.SpotifyId)
-                    break;
-
-                foreach (KeyValuePair<ArtistNode, double> connection in _adjacencyMatrix[currentArtist])
-                {
-                    ArtistNode neighbour = connection.Key;
-                    double newDist = currentDistance + connection.Value;
-
-                    if (newDist < distances[connection.Key])
-                    {
-                        distances[neighbour] = newDist;
-                        previous[neighbour] = currentArtist;
-                        priorityQueue.Enqueue(neighbour, newDist);
-                    }
-                }
-            }
-
-            ArtistNode pathArtistNode = endArtistNode;
-            while (pathArtistNode != null)
-            {
-                Path.Insert(0, pathArtistNode);
-                pathArtistNode = previous[pathArtistNode];
-            }
-            return Path;
-
-        }
-
-        
+        return [];
     }
 }

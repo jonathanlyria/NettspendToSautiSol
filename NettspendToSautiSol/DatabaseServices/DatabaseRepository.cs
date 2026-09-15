@@ -58,6 +58,14 @@ public class DatabaseRepository : IDatabaseRepository
         {
             connection.Open();
 
+            // Include isolated artists so a self-route is valid even without edges.
+            using (var artistCommand = new SqliteCommand("SELECT SpotifyId, ArtistName FROM Artist", connection))
+            using (var artists = artistCommand.ExecuteReader())
+            {
+                while (artists.Read())
+                    artistNetwork[new ArtistNode(artists.GetString(1), artists.GetString(0))] = new();
+            }
+
             string selectQuery = @"
             SELECT a1.ArtistName, c.SpotifyId1, a2.ArtistName, c.SpotifyId2, c.Weight
             FROM Connections c
@@ -78,7 +86,8 @@ public class DatabaseRepository : IDatabaseRepository
                         string spotifyId2 = reader.GetString(3);
                         ArtistNode artistNode2 = new ArtistNode(artistName2, spotifyId2);
                         
-                        double weight = reader.GetDouble(4);
+                        // The database retains raw similarity. Only traversal uses dissimilarity.
+                        double cost = ArtistSimilarity.ToCost(reader.GetDouble(4));
                         if (!artistNetwork.ContainsKey(artistNode1))
                         {
                             artistNetwork.Add(artistNode1, new Dictionary<ArtistNode, double>());
@@ -87,8 +96,8 @@ public class DatabaseRepository : IDatabaseRepository
                         {
                             artistNetwork.Add(artistNode2, new Dictionary<ArtistNode, double>());
                         }
-                        artistNetwork[artistNode1][artistNode2] = weight;
-                        artistNetwork[artistNode2][artistNode1] = weight;
+                        artistNetwork[artistNode1][artistNode2] = cost;
+                        artistNetwork[artistNode2][artistNode1] = cost;
                     }
                 }
             }

@@ -6,8 +6,8 @@ namespace NettspendToSautiSol
 {
     public class SpotifyClientCredentials
     {
-        private readonly string _clientId = "c6ed8f690a15491f9deb29547c8447ff";
-        private readonly string _clientSecret = "34009c71d59748a09bf3867de0f8869e";
+        private readonly string _clientId = Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_ID") ?? throw new InvalidOperationException("Set SPOTIFY_CLIENT_ID before using the prototype.");
+        private readonly string _clientSecret = Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_SECRET") ?? throw new InvalidOperationException("Set SPOTIFY_CLIENT_SECRET before using the prototype.");
         private const string TokenUrl = "https://accounts.spotify.com/api/token";
 
         public async Task<(string AccessToken, int ExpiresIn)> GetAccessTokenAsync()

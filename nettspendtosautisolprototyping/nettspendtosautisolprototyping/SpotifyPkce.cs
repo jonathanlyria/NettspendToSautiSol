@@ -8,7 +8,7 @@ namespace nettspendtosautisolprototyping;
 
 public class SpotifyPkce
 {
-    private readonly string _clientId = "4b48d508580749dab1ec05cbe16e51e5"; // this is my application id, it does not need to be kept secret
+    private readonly string _clientId = Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_ID") ?? throw new InvalidOperationException("Set SPOTIFY_CLIENT_ID before using the prototype."); // this is my application id, it does not need to be kept secret
     private readonly string _redirectUri = "http://localhost:8888/callback/"; // this is my callback uri which i specified in my 
     private string? _accessToken; // final access token for the user
 

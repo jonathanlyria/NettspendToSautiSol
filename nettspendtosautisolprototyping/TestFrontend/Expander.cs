@@ -9,7 +9,7 @@ namespace TestFrontend
 {
     public class Expander
     {
-        private static readonly string ApiKey = "00751a650c0182344603b9252c66d416"; //last.fm api call
+        private static readonly string ApiKey = Environment.GetEnvironmentVariable("LASTFM_API_KEY") ?? throw new InvalidOperationException("Set LASTFM_API_KEY before using the prototype."); //last.fm api call
         public Queue<string> ArtistQueue = new Queue<string>(); // queue of artists for breadth-first search
 
         private Dictionary<string, Dictionary<string, double>> Network =

@@ -1,0 +1,21 @@
+name: Build and graph checks
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6.0.0
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build application
+        run: dotnet build NettspendToSautiSol/NettspendToSautiSol.sln --configuration Release
+      - name: Check graph behaviour
+        run: dotnet run --project tests/Pathfinding.Checks --configuration Release

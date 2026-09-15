@@ -8,9 +8,9 @@ namespace webserver
 
     public class PlaylistRequest
     {
-        public string Code { get; set; }
-        public List<string> Path { get; set; }
-        public string State { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public List<string> Path { get; set; } = [];
+        public string State { get; set; } = string.Empty;
     }
 
 
@@ -20,7 +20,6 @@ namespace webserver
         IArtistNetwork artistNetwork,
         IWebServerDatabaseService webServerDatabaseService,
         ISpotifyPkceCodeAuthorizer spotifyPkceCodeAuthorizer,
-        ISpotifyClientCredentialAuthorizer spotifyClientCredentials,
         IGetPlaylistSongsService getPlaylistSongsService,
         ICreatePlaylistService createPlaylistService)
         : ControllerBase
@@ -34,7 +33,7 @@ namespace webserver
                 bool exists = webServerDatabaseService.IsArtistInDbByName(artistName);
                 return Ok(new { ArtistExist = exists });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new { Error = "An error occurred while checking the artist." });
             }
@@ -43,12 +42,21 @@ namespace webserver
         [HttpGet("find-path")]
         public IActionResult FindPath([FromQuery] string artist1, [FromQuery] string artist2)
         {
+            if (string.IsNullOrWhiteSpace(artist1) || string.IsNullOrWhiteSpace(artist2))
+                return BadRequest(new { Error = "Provide both artist names." });
+
             try
             {
+                if (!webServerDatabaseService.IsArtistInDbByName(artist1) ||
+                    !webServerDatabaseService.IsArtistInDbByName(artist2))
+                    return NotFound(new { Error = "One or both artists are absent from the graph." });
+
                 ArtistNode artist1Node = new ArtistNode(artist1, webServerDatabaseService.GetIdFromName(artist1));
                 ArtistNode artist2Node = new ArtistNode(artist2, webServerDatabaseService.GetIdFromName(artist2));
                
                 List<ArtistNode> path = artistNetwork.FindPathWithDijkstras(artist1Node, artist2Node);
+                if (path.Count == 0)
+                    return NotFound(new { Error = "No route connects these artists." });
                 Console.WriteLine($"TRYING TO TRAVEL BETWEEN {artist1Node.Name} and {artist2Node.Name}");
                 foreach (string id in path.Select(a => a.SpotifyId).ToList())
                 {
@@ -61,7 +69,7 @@ namespace webserver
                     PathName = path.Select(a => a.Name).ToList(),
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new { Error = "An error occurred while finding the path." });
             }
@@ -75,7 +83,7 @@ namespace webserver
                 (string authUrl, string state) = await spotifyPkceCodeAuthorizer.GetAuthorizationUrl();
                 return Ok(new { AuthUrl = authUrl, State = state });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new { Error = "Authentication initialization failed" });
             }
@@ -87,16 +95,16 @@ namespace webserver
         {
             try
             {
-                Console.ForegroundColor = ConsoleColor.Magenta;
-                string accessToken = await spotifyPkceCodeAuthorizer.ExchangeCode(request.Code, request.State);
-                Console.WriteLine($"PKCE TOKEN: {accessToken}");
-                Console.ResetColor();
-
-                if (!request.Path.Any())
+                if (request.Path is null || request.Path.Count == 0)
                 {
                     Console.WriteLine("No path provided");
                     return BadRequest(new { Error = "Path is empty" });
                 }
+
+                if (string.IsNullOrWhiteSpace(request.Code) || string.IsNullOrWhiteSpace(request.State))
+                    return BadRequest(new { Error = "A Spotify authorisation code and state are required." });
+
+                string accessToken = await spotifyPkceCodeAuthorizer.ExchangeCode(request.Code, request.State);
 
                 List<ArtistNode> artists = new();
 
@@ -118,7 +126,7 @@ namespace webserver
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return StatusCode(500, new { Error = "An error occurred while creating the playlist.", Details = ex.Message });
+                return StatusCode(500, new { Error = "An error occurred while creating the playlist." });
             }
         } 
 
@@ -133,7 +141,9 @@ namespace webserver
                     return BadRequest("Artist name cannot be empty.");
                 }
 
-                string path = "/Users/jonathanlyria/RiderProjects/NettspendToSautiSol/NettspendToSautiSol/webserver/reportissue.txt";
+                string path = Environment.GetEnvironmentVariable("ARTIST_REPORT_PATH")
+                    ?? System.IO.Path.Combine(AppContext.BaseDirectory, "reports", "artist-issues.txt");
+                Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path))!);
 
                 if (!System.IO.File.Exists(path))
                 {
@@ -144,9 +154,9 @@ namespace webserver
 
                 return Ok($"Issue reported for artist: {issue}");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, "The issue could not be recorded.");
             }
         }
 
@@ -163,11 +173,10 @@ namespace webserver
                     }).ToList()
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new { 
-                    Error = "Failed to retrieve artists", 
-                    Details = ex.Message 
+                    Error = "Failed to retrieve artists"
                 });
             }
         }

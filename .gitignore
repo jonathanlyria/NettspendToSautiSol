@@ -1,0 +1,21 @@
+# Reproducible build output and restored dependencies
+**/bin/
+**/obj/
+**/packages/
+**/node_modules/
+
+# Editor and operating-system files
+.DS_Store
+.idea/
+.vs/
+*.user
+*.suo
+
+# Local configuration, credentials, and generated reports
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+**/reports/
+*.db-shm
+*.db-wal

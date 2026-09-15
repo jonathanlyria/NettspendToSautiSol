@@ -8,13 +8,10 @@ namespace expander
     {
         public static async Task Main(string[] args)
         {
-            string databasePath = args[0];
-            string lastFmApiKey = args[1];
-            string spotifyClientId = args[2];
-            string spotifyClientSecret = args[3];
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"database path: {databasePath} last fm {lastFmApiKey} spotify {spotifyClientId} || {spotifyClientSecret}");
-            Console.ResetColor();
+            string databasePath = EnvironmentConfiguration.Require("ARTIST_DATABASE_PATH");
+            string lastFmApiKey = EnvironmentConfiguration.Require("LASTFM_API_KEY");
+            string spotifyClientId = EnvironmentConfiguration.Require("SPOTIFY_CLIENT_ID");
+            string spotifyClientSecret = EnvironmentConfiguration.Require("SPOTIFY_CLIENT_SECRET");
             
             HttpClient client = new HttpClient();
             

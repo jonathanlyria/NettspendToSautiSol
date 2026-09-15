@@ -254,7 +254,7 @@ public class SpotifyData
 }
 public class LastFmData
 {
-    private string LastFmApiKey = "00751a650c0182344603b9252c66d416";
+    private string LastFmApiKey = Environment.GetEnvironmentVariable("LASTFM_API_KEY") ?? throw new InvalidOperationException("Set LASTFM_API_KEY before using the prototype.");
     public bool isLastFmDataValid;
     public string lastFmDataInvalidReason;
     public string url = "http://ws.audioscrobbler.com/2.0/";

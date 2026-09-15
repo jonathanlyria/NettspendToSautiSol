@@ -49,7 +49,9 @@ public class LastFmApiService : ILastFmApiService
                     throw new InvalidOperationException("Artist does not have name and match.");
 
                 string foundArtist = artistData.GetProperty("name").GetString()!;
-                double match = double.Parse(artistData.GetProperty("match").GetString()!);
+                double match = double.Parse(artistData.GetProperty("match").GetString()!,
+                    System.Globalization.CultureInfo.InvariantCulture);
+                _ = GlobalTypes.ArtistSimilarity.ToCost(match);
                 if (!foundArtist.Contains('&'))
                     similarArtists[foundArtist] = match;
             }
