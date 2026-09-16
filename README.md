@@ -133,12 +133,4 @@ This operation writes to the configured database and calls external APIs. The ex
 
 Build outputs, downloaded dependency packages, and local environment files are ignored by Git. The original report and database are retained.
 
-## Next improvements
-
-- Verify live authentication and playlist creation against current provider access.
-- Add integration tests for API failures, expired authorisation state, and rate limits.
-- Compare route quality with unweighted shortest paths and alternative cost functions.
-- Record data collection dates and measure graph coverage and popularity bias.
-- Resolve remaining warnings and establish a reproducible browser demo.
-
 No repository-wide software licence has been selected. Review original and third-party code and assets before choosing one.
